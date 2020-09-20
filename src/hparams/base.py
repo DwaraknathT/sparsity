@@ -1,10 +1,11 @@
 class Dense:
   def __init__(self):
     # Model params
-    self.model = 'vgg19'
+    self.model = 'vgg11_bn'
     self.model_type = 'dense'
     self.seed = 1
     self.mode = 'train'
+    self.device = 'cpu'
 
     # Training params
     self.epochs = 200
@@ -17,13 +18,14 @@ class Dense:
     self.optim = 'sgd'
     self.lr = 0.1
     self.lr_schedule = 'step'
+    self.milestones = [25000, 50000, 75000, 90000]
 
     # Cyclic lr params
-    self.up_step = None
-    self.down_step = None
+    self.up_step = 10000
+    self.down_step = 10000
 
     # Output name
-    self.output_dir = '{}/{}/{}/'.format(
+    self.output_dir = '{}/{}/lr_{}/'.format(
       self.dataset,
       self.model,
       self.lr_schedule
@@ -33,10 +35,11 @@ class Dense:
 class Sparse:
   def __init__(self):
     # Model params
-    self.model = 'vgg19'
+    self.model = 'vgg19_bn'
     self.model_type = 'sparse'
     self.seed = 1
     self.mode = 'train'
+    self.device = 'cpu'
 
     # Training params
     self.epochs = 200
@@ -49,10 +52,11 @@ class Sparse:
     self.optim = 'sgd'
     self.lr = 0.1
     self.lr_schedule = 'step'
+    self.milestones = [25000, 50000, 75000, 90000]
 
     # Cyclic lr params
-    self.up_step = None
-    self.down_step = None
+    self.up_step = 10000
+    self.down_step = 10000
 
     self.model_type = 'sparse'
     self.ramping = False
@@ -69,7 +73,7 @@ class Sparse:
     self.ramp_type = 'linear'  # linear, cyclic, quadratic ramp
 
     # Output name 
-    self.output_dir = '{}/{}/{}/{}/{}_{}_{}/{}/'.format(
+    self.output_dir = '{}/{}/lr_{}/{}/{}_{}_{}/{}/'.format(
       self.dataset,
       self.model,
       self.lr_schedule,

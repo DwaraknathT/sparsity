@@ -30,8 +30,9 @@ author, Yerlan Idelbayev.
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
+from src.models.layers import MaskedConv
 
-from layers.layers import MaskedConv
+from src.models.registry import register
 
 __all__ = ['ResNet', 'resnet20', 'resnet32', 'resnet44', 'resnet56', 'resnet110', 'resnet1202']
 
@@ -119,25 +120,31 @@ class ResNet(nn.Module):
     return out
 
 
+@register
 def resnet20(num_classes):
   return ResNet(BasicBlock, [3, 3, 3], num_classes=num_classes)
 
 
+@register
 def resnet32(num_classes):
   return ResNet(BasicBlock, [5, 5, 5], num_classes=num_classes)
 
 
+@register
 def resnet44(num_classes):
   return ResNet(BasicBlock, [7, 7, 7], num_classes=num_classes)
 
 
+@register
 def resnet56(num_classes):
   return ResNet(BasicBlock, [9, 9, 9], num_classes=num_classes)
 
 
+@register
 def resnet110(num_classes):
   return ResNet(BasicBlock, [18, 18, 18], num_classes=num_classes)
 
 
+@register
 def resnet1202(num_classes):
   return ResNet(BasicBlock, [200, 200, 200], num_clases=num_classes)

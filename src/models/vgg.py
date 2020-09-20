@@ -4,7 +4,9 @@ Modified from https://github.com/pytorch/vision.git
 import math
 
 import torch.nn as nn
-from layers.layers import MaskedConv, MaskedDense
+from src.models.layers import MaskedConv, MaskedDense
+
+from src.models.registry import register
 
 __all__ = [
   'VGG', 'vgg11', 'vgg11_bn', 'vgg13', 'vgg13_bn', 'vgg16', 'vgg16_bn',
@@ -66,41 +68,49 @@ cfg = {
 }
 
 
+@register
 def vgg11(num_classes=10):
   """VGG 11-layer model (configuration "A")"""
   return VGG(make_layers(cfg['A']), num_classes)
 
 
+@register
 def vgg11_bn(num_classes=10):
   """VGG 11-layer model (configuration "A") with batch normalization"""
   return VGG(make_layers(cfg['A'], batch_norm=True), num_classes)
 
 
+@register
 def vgg13(num_classes=10):
   """VGG 13-layer model (configuration "B")"""
   return VGG(make_layers(cfg['B']), num_classes)
 
 
+@register
 def vgg13_bn(num_classes=10):
   """VGG 13-layer model (configuration "B") with batch normalization"""
   return VGG(make_layers(cfg['B'], batch_norm=True), num_classes)
 
 
+@register
 def vgg16(num_classes=10):
   """VGG 16-layer model (configuration "D")"""
   return VGG(make_layers(cfg['D']), num_classes)
 
 
+@register
 def vgg16_bn(num_classes=10):
   """VGG 16-layer model (configuration "D") with batch normalization"""
   return VGG(make_layers(cfg['D'], batch_norm=True), num_classes)
 
 
+@register
 def vgg19(num_classes=10):
   """VGG 19-layer model (configuration "E")"""
   return VGG(make_layers(cfg['E']), num_classes)
 
 
+@register
 def vgg19_bn(num_classes=10):
   """VGG 19-layer model (configuration 'E') with batch normalization"""
   return VGG(make_layers(cfg['E'], batch_norm=True), num_classes)

@@ -3,7 +3,6 @@ _HPARAMS = dict()
 
 def register(fn):
   global _HPARAMS
-  print(fn.__name__)
   _HPARAMS[fn.__name__] = fn()
   return fn
 
