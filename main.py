@@ -5,7 +5,7 @@ from src.models.registry import get_model
 from src.utils.args import get_args
 from src.utils.datasets import get_data
 from src.utils.logger import get_logger, setup_dirs
-from src.trainers.dense_trainer import train, test
+from src.trainers.sparse_trainer import train, test
 
 # Get paramodelmeters and setup directories, loggers
 args = get_args()
@@ -24,6 +24,8 @@ args.device = device
 
 def main():
   trainloader, testloader = get_data(args)
+  if args.steps is None:
+    args.steps = args.epochs * len(trainloader)
   train(trainloader, testloader)
 
 

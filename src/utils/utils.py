@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
@@ -14,6 +15,15 @@ logger = get_logger(__name__)
 def get_lr(optimizer):
   for param_group in optimizer.param_groups:
     return param_group['lr']
+
+
+def mask_sparsity(net):
+  sparsities = []
+  for module in net.modules():
+    if hasattr(module, 'mask'):
+      mask = module.mask.detach().cpu().numpy()
+      sparsities.append(round(1. - np.sum(mask) / mask.size, 2))
+  return sparsities
 
 
 def set_lr(optimizer, lr):
