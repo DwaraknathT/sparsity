@@ -12,7 +12,7 @@ class Dense:
     self.steps = None
     self.eval_step = 1000
     self.clip = 1
-    self.dataset = 'cifar10'
+    self.dataset = 'cifar100'
     self.num_classes = 10
     self.batch_size = 100
     self.optim = 'sgd'
@@ -46,7 +46,7 @@ class Sparse:
     self.steps = None
     self.eval_step = 1000
     self.clip = 1
-    self.dataset = 'cifar10'
+    self.dataset = 'cifar100'
     self.num_classes = 10
     self.batch_size = 100
     self.optim = 'sgd'
@@ -71,6 +71,7 @@ class Sparse:
     self.global_prune = False  # global, local prning
     self.prune_type = 'weight'  # weight, unit pruning
     self.ramp_type = 'linear'  # linear, cyclic, quadratic ramp
+    self.ramp_cycle_step = 'linear'  # linear, cyclic, quadratic ramp
 
     # Output name 
     self.output_dir = '{}/{}/lr_{}/{}/{}_{}_{}/{}/'.format(
