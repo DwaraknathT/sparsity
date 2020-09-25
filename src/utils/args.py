@@ -12,6 +12,8 @@ parser.add_argument(
   '--mode', default='train', type=bool, help='In eval mode or not')
 parser.add_argument(
   '--load_prev', default=False, type=bool, help='Load prev weights')
+parser.add_argument(
+  '--resume', default=False, type=bool, help='Resume training')
 
 # Training params
 parser.add_argument(
@@ -30,6 +32,8 @@ parser.add_argument(
   '--down_step', default=10000, type=int, help='No of cycles in cyclical lr')
 parser.add_argument(
   '--milestones', default=[25000, 50000, 75000, 90000], type=list, help='Multi step lr')
+parser.add_argument(
+  '--device', default='cpu', type=str, help='Device to use')
 
 parser.add_argument(
   '--epochs', default=200, type=int, help='No of epochs')
