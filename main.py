@@ -7,7 +7,7 @@ from src.utils.args import get_args
 from src.utils.datasets import get_data
 from src.utils.logger import get_logger, setup_dirs
 
-# Get paramodelmeters and setup directories, loggers
+# Get parameters and setup directories, loggers
 args = get_args()
 setup_dirs()
 logger = get_logger(__name__)

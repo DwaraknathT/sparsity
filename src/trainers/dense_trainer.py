@@ -47,7 +47,7 @@ class DenseTrainer:
       trainloader,
       testloader):
     # Get model, optimizer, criterion, lr_scheduler
-    model, criterion, optimizer, lr_scheduler = get_model()
+    model, criterion, optimizer, lr_scheduler = get_model(self.args)
     model.train()
     if self.args.steps is None:
       self.args.steps = self.args.epochs * len(trainloader)

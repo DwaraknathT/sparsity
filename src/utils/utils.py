@@ -9,7 +9,6 @@ from src.utils.args import get_args
 from src.utils.logger import get_logger
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
-args = get_args()
 logger = get_logger(__name__)
 
 
@@ -33,7 +32,7 @@ def set_lr(optimizer, lr):
   return optimizer
 
 
-def get_model():
+def get_model(args):
   model = model_fn(args)
   model = model.to(device)
   params = []
