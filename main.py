@@ -31,8 +31,6 @@ def main():
   trainloader, testloader = get_data(args)
   # get trainer
   trainer = trainers[args.model_type](args)
-  if args.steps is None:
-    args.steps = args.epochs * len(trainloader)
   trainer.train(trainloader, testloader)
 
 
