@@ -32,8 +32,6 @@ parser.add_argument(
   '--down_step', default=10000, type=int, help='No of cycles in cyclical lr')
 parser.add_argument(
   '--milestones', default=[25000, 50000, 75000, 90000], type=list, help='Multi step lr')
-parser.add_argument(
-  '--device', default='cpu', type=str, help='Device to use')
 
 parser.add_argument(
   '--epochs', default=200, type=int, help='No of epochs')

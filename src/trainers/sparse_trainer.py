@@ -51,6 +51,8 @@ class SparseTrainer:
     # Get model, optimizer, criterion, lr_scheduler
     model, criterion, optimizer, lr_scheduler = get_model()
     model.train()
+    if self.args.steps is None:
+      self.args.steps = self.args.epochs * len(trainloader)
     pruner = Pruner(self.args, model)
 
     logger.info('Mask check before training')
@@ -69,7 +71,7 @@ class SparseTrainer:
         iterator = iter(trainloader)
 
       inputs, targets = iterator.next()
-      inputs, targets = inputs.to(self.args.device), targets.to(self.args.device)
+      inputs, targets = inputs.to(device), targets.to(device)
       optimizer.zero_grad()
       outputs = model(inputs)
       loss = criterion(outputs, targets)

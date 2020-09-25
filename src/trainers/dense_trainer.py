@@ -50,7 +50,7 @@ class DenseTrainer:
     model, criterion, optimizer, lr_scheduler = get_model()
     model.train()
     if self.args.steps is None:
-      steps = self.args.epochs * len(trainloader)
+      self.args.steps = self.args.epochs * len(trainloader)
 
     logger.info('Mask check before training')
     mask_check(model)
@@ -61,14 +61,14 @@ class DenseTrainer:
     n_epochs = 0
     iterator = iter(trainloader)
 
-    for batch_idx in range(0, steps, 1):
+    for batch_idx in range(0, self.args.steps, 1):
       step = batch_idx
       if batch_idx == n_epochs * len(trainloader):
         n_epochs = n_epochs + 1
         iterator = iter(trainloader)
 
       inputs, targets = iterator.next()
-      inputs, targets = inputs.to(self.args.device), targets.to(self.args.device)
+      inputs, targets = inputs.to(device), targets.to(device)
       optimizer.zero_grad()
       outputs = model(inputs)
       loss = criterion(outputs, targets)

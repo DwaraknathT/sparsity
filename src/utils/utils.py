@@ -8,6 +8,7 @@ from src.models.registry import get_model as model_fn
 from src.utils.args import get_args
 from src.utils.logger import get_logger
 
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 args = get_args()
 logger = get_logger(__name__)
 
@@ -34,7 +35,7 @@ def set_lr(optimizer, lr):
 
 def get_model():
   model = model_fn(args)
-  model = model.to(args.device)
+  model = model.to(device)
   params = []
   for n, m in model.named_parameters():
     if 'mask' not in n:
@@ -67,7 +68,7 @@ def get_model():
       step_size_down=args.down_step)
 
   criterion = nn.CrossEntropyLoss()
-  if args.device == 'cuda':
+  if device == 'cuda':
     model = torch.nn.DataParallel(model)
     cudnn.benchmark = True
 
