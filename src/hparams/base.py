@@ -71,7 +71,7 @@ class Sparse:
     self.global_prune = False  # global, local prning
     self.prune_type = 'weight'  # weight, unit pruning
     self.ramp_type = 'linear'  # linear, cyclic, quadratic ramp
-    self.ramp_cycle_step = 'linear'  # linear, cyclic, quadratic ramp
+    self.ramp_cycle_step = 'full'  # full, half cycle ramp
 
     # Output name 
     self.output_dir = '{}/{}/lr_{}/{}/{}_{}_{}/{}/'.format(
