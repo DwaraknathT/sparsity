@@ -5,11 +5,41 @@ import torch.nn as nn
 import torch.optim as optim
 
 from src.models.registry import get_model as model_fn
-from src.utils.args import get_args
 from src.utils.logger import get_logger
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 logger = get_logger(__name__)
+
+
+def set_lr(optimizer, lr):
+  for param_group in optimizer.param_groups:
+    param_group['lr'] = lr
+  return optimizer
+
+
+class LrScheduler:
+  def __init__(self, args):
+    self.args = args
+    self.steps = args.steps
+    self.init_lr = args.lr
+
+  def linear_schedule(self, step):
+    t = (step) / (self.steps)
+    if t <= 0.5:
+      factor = 1.0
+    elif t <= 0.9:
+      factor = 1.0 - (1.0 - 0.01) * (t - 0.5) / 0.4
+    else:
+      factor = 0.01
+    return self.init_lr * factor
+
+  def step(self, optimizer, step):
+    if self.args.lr_schedule == 'linear':
+      lr = self.linear_schedule(step)
+    else:
+      raise NotImplementedError('Only use cyclic, linear, step')
+    set_lr(optimizer, lr)
+    return optimizer
 
 
 def get_lr(optimizer):
@@ -24,12 +54,6 @@ def mask_sparsity(net):
       mask = module.mask.detach().cpu().numpy()
       sparsities.append(round(1. - np.sum(mask) / mask.size, 2))
   return sparsities
-
-
-def set_lr(optimizer, lr):
-  for param_group in optimizer.param_groups:
-    param_group['lr'] = lr
-  return optimizer
 
 
 def get_model(args):
@@ -53,25 +77,25 @@ def get_model(args):
       params,
       lr=args.lr)
 
-  if args.lr_schedule == 'step':
-    lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
-      optimizer,
-      args.milestones
-    )
-  elif args.lr_schedule == 'cyclic':
-    lr_scheduler = torch.optim.lr_scheduler.CyclicLR(
-      optimizer,
-      base_lr=0,
-      max_lr=args.lr,
-      step_size_up=args.up_step,
-      step_size_down=args.down_step)
+    # if args.lr_schedule == 'step':
+    #   lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
+    #     optimizer,
+    #     args.milestones
+    #   )
+    # elif args.lr_schedule == 'cyclic':
+    #   lr_scheduler = torch.optim.lr_scheduler.CyclicLR(
+    #     optimizer,
+    #     base_lr=0,
+    #     max_lr=args.lr,
+    #     step_size_up=args.up_step,
+    #     step_size_down=args.down_step)
 
   criterion = nn.CrossEntropyLoss()
   if device == 'cuda':
     model = torch.nn.DataParallel(model)
     cudnn.benchmark = True
 
-  return model, criterion, optimizer, lr_scheduler
+  return model, criterion, optimizer
 
 
 # Mask sanity check

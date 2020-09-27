@@ -25,7 +25,7 @@ parser.add_argument(
 parser.add_argument(
   '--lr', default=0.1, type=float, help='Initial LR')
 parser.add_argument(
-  '--lr_schedule', default='step', type=str, help='LR scheduler')
+  '--lr_schedule', default='linear', type=str, help='LR scheduler')
 parser.add_argument(
   '--up_step', default=10000, type=int, help='No of cycles in cyclical lr')
 parser.add_argument(

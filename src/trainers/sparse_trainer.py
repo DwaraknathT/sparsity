@@ -3,7 +3,8 @@ import torch
 from src.models.registry import register
 from src.utils.logger import get_logger
 from src.utils.prune import Pruner
-from src.utils.utils import get_lr, get_model, mask_check, mask_sparsity
+from src.utils.utils import get_lr, set_lr, LrScheduler
+from src.utils.utils import get_model, mask_check, mask_sparsity
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 logger = get_logger(__name__)
@@ -17,11 +18,10 @@ class SparseTrainer:
   def __init__(self, args):
     self.args = args
 
-  def test(
-      self,
-      testloader,
-      model,
-      criterion):
+  def test(self,
+           testloader,
+           model,
+           criterion):
     model.eval()
     test_loss = 0
     correct = 0
@@ -43,14 +43,14 @@ class SparseTrainer:
     return loss, acc
 
   # Training
-  def train(
-      self,
-      trainloader,
-      testloader):
+  def train(self,
+            trainloader,
+            testloader):
     # Fill up the steps
     # Get model, optimizer, criterion, lr_scheduler
-    model, criterion, optimizer, lr_scheduler = get_model(self.args)
+    model, criterion, optimizer = get_model(self.args)
     model.train()
+    scheduler = LrScheduler(self.args)
     if self.args.steps is None:
       self.args.steps = self.args.epochs * len(trainloader)
     pruner = Pruner(self.args, model)
@@ -78,7 +78,7 @@ class SparseTrainer:
       loss.backward()
 
       optimizer.step()
-      lr_scheduler.step()
+      optimizer = scheduler.step(optimizer, step)
       train_loss += loss.item()
 
       _, predicted = outputs.max(1)

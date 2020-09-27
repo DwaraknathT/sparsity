@@ -2,6 +2,7 @@ import torch
 
 from src.models.registry import register
 from src.utils.logger import get_logger
+from src.utils.utils import set_lr, LrScheduler
 from src.utils.utils import get_lr, get_model, mask_check
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -16,8 +17,7 @@ class DenseTrainer:
   def __init__(self, args):
     self.args = args
 
-  def test(
-      self,
+  def test(self,
       testloader,
       model,
       criterion):
@@ -42,13 +42,13 @@ class DenseTrainer:
     return loss, acc
 
   # Training
-  def train(
-      self,
+  def train(self,
       trainloader,
       testloader):
     # Get model, optimizer, criterion, lr_scheduler
-    model, criterion, optimizer, lr_scheduler = get_model(self.args)
+    model, criterion, optimizer = get_model(self.args)
     model.train()
+    scheduler = LrScheduler(self.args)
     if self.args.steps is None:
       self.args.steps = self.args.epochs * len(trainloader)
 
@@ -75,7 +75,7 @@ class DenseTrainer:
       loss.backward()
 
       optimizer.step()
-      lr_scheduler.step()
+      optimizer = scheduler.step(optimizer, step)
       train_loss += loss.item()
 
       _, predicted = outputs.max(1)
