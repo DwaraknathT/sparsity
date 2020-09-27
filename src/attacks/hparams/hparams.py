@@ -1,4 +1,4 @@
-from .hparams_registry import register
+from src.attacks.hparams.registry import register
 
 
 class HParams():

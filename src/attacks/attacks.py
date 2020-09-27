@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 import torch
 from torch.autograd import Variable
 
-from .attacks_registry import register
+from .registry import register
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 

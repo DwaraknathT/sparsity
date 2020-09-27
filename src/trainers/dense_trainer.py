@@ -1,7 +1,7 @@
 import torch
 
-from src.attacks.attacks_registry import get_attack
-from src.attacks.hparams_registry import get_attack_params
+from src.attacks.registry import get_attack
+from src.attacks.hparams.registry import get_attack_params
 from src.attacks.test_attack import Test_Attack
 from src.models.registry import register
 from src.utils.logger import get_logger
