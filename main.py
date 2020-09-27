@@ -31,7 +31,8 @@ def main():
   trainloader, testloader = get_data(args)
   # get trainer
   trainer = trainers[args.model_type](args)
-  trainer.train(trainloader, testloader)
+  model = trainer.train(trainloader, testloader)
+  trainer.test_attack(args.attack, testloader)
 
 
 if __name__ == '__main__':

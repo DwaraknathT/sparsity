@@ -1,8 +1,11 @@
 import torch
 
+from src.attacks.attacks_registry import get_attack
+from src.attacks.hparams_registry import get_attack_params
+from src.attacks.test_attack import Test_Attack
 from src.models.registry import register
 from src.utils.logger import get_logger
-from src.utils.utils import set_lr, LrScheduler
+from src.utils.utils import LrScheduler
 from src.utils.utils import get_lr, get_model, mask_check
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -16,20 +19,27 @@ cifar_10_classes = ('plane', 'car', 'bird', 'cat',
 class DenseTrainer:
   def __init__(self, args):
     self.args = args
+    self.model, self.criterion, self.optimizer = get_model(self.args)
 
-  def test(self,
-      testloader,
-      model,
-      criterion):
-    model.eval()
+  def test_attack(self, attack, dataloader):
+    attack_params = get_attack_params(attack)
+    attack = get_attack(self.model, self.criterion, attack_params)
+    attacker = Test_Attack(attack,
+                           dataloader,
+                           attack_params.epsilons,
+                           attack_params.eval_steps)
+    attacker.test()
+
+  def test(self, testloader):
+    self.model.eval()
     test_loss = 0
     correct = 0
     total = 0
     with torch.no_grad():
       for batch_idx, (inputs, targets) in enumerate(testloader):
         inputs, targets = inputs.to(device), targets.to(device)
-        outputs = model(inputs)
-        loss = criterion(outputs, targets)
+        outputs = self.model(inputs)
+        loss = self.criterion(outputs, targets)
 
         test_loss += loss.item()
         _, predicted = outputs.max(1)
@@ -38,21 +48,19 @@ class DenseTrainer:
 
     acc = 100. * correct / total
 
-    model.train()
+    self.model.train()
     return loss, acc
 
   # Training
-  def train(self,
-      trainloader,
-      testloader):
-    # Get model, optimizer, criterion, lr_scheduler
-    model, criterion, optimizer = get_model(self.args)
-    model.train()
+  def train(self, trainloader, testloader):
+    # Get self.model, self.optimizer, self.criterion, lr_scheduler
+
+    self.model.train()
     if self.args.steps is None:
       self.args.steps = self.args.epochs * len(trainloader)
 
     logger.info('Mask check before training')
-    mask_check(model)
+    mask_check(self.model)
     scheduler = LrScheduler(self.args)
 
     train_loss = 0
@@ -69,13 +77,13 @@ class DenseTrainer:
 
       inputs, targets = iterator.next()
       inputs, targets = inputs.to(device), targets.to(device)
-      optimizer.zero_grad()
-      outputs = model(inputs)
-      loss = criterion(outputs, targets)
+      self.optimizer.zero_grad()
+      outputs = self.model(inputs)
+      loss = self.criterion(outputs, targets)
       loss.backward()
 
-      optimizer.step()
-      optimizer = scheduler.step(optimizer, step)
+      self.optimizer.step()
+      self.optimizer = scheduler.step(self.optimizer, step)
       train_loss += loss.item()
 
       _, predicted = outputs.max(1)
@@ -87,15 +95,15 @@ class DenseTrainer:
                   "Train Accuracy: {:.4f} Learning Rate {:.4f} ".format(step,
                                                                         loss,
                                                                         (correct / total),
-                                                                        get_lr(optimizer)))
+                                                                        get_lr(self.optimizer)))
         logger.info(string)
-        test_loss, test_acc = self.test(testloader, model, criterion)
+        test_loss, test_acc = self.test(testloader)
         logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(test_loss,
                                                                      test_acc))
 
     logger.info('Training completed')
-    test_loss, test_acc = self.test(testloader, model, criterion)
+    test_loss, test_acc = self.test(testloader)
     logger.info("Final Test Loss: {:.4f} Final Test Accuracy: {:.4f}".format(test_loss,
                                                                              test_acc))
 
-    return model
+    return self.model

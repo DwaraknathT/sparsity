@@ -74,6 +74,10 @@ parser.add_argument(
 parser.add_argument(
   '--ramp_cycle_type', default='full', type=str, help='Ramp cycle type')
 
+# Attack params
+parser.add_argument(
+  '--attack', default='fgsm', type=str, help='Adversarial attack to use')
+
 
 def get_args():
   args = parser.parse_args()
