@@ -7,6 +7,6 @@ def register(fn):
   return fn
 
 
-def get_attack(model, criterion, attack_params):
-  return _ATTACKS[attack_params.name](model, criterion,
+def get_attack(criterion, attack_params):
+  return _ATTACKS[attack_params.name](criterion,
                                       attack_params)

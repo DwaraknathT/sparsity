@@ -83,7 +83,7 @@ class FGSM(Attack):
                y_target=None):
     data = data.to(self.device)
     data.requires_grad = True
-    output = model(data, self.hparams)
+    output = model(data)
     init_pred = output.max(1)[1]
     if y_target is not None:  # if no y is specified use predictions as the label for the attack
       target = y_target
@@ -92,10 +92,10 @@ class FGSM(Attack):
     else:
       target = y  # use y itself as the target
     target = target.to(self.device)
-    perturbed_matrix = self.perturb(data, epsilon, output, target, y_target)
+    perturbed_matrix = self.perturb(model, data, epsilon, output, target, y_target)
     perturbed_data = data + perturbed_matrix
     perturbed_data = torch.clamp(perturbed_data, self.min_value, self.max_value)
-    output = model(perturbed_data, self.hparams)
+    output = model(perturbed_data)
     final_pred = output.max(1)[1]
     return init_pred, perturbed_data, final_pred
 
@@ -123,7 +123,7 @@ class PGD(FGSM):
     else:
       data = X_img.clone()
     data = data.to(self.device)
-    output = model(data, self.hparams)
+    output = model(data)
     init_pred = output.max(1)[1]
     if y_target is not None:  # if no y is specified use predictions as the label for the attack
       target = y_target
@@ -135,8 +135,8 @@ class PGD(FGSM):
       y_var = Variable((target)).to(self.device)
       X_var = data.clone()
       X_var.requires_grad = True
-      output = model(X_var, self.hparams)
-      perturbed_matrix = self.perturb(X_var, self.step_size, output, y_var,
+      output = model(X_var)
+      perturbed_matrix = self.perturb(model, X_var, self.step_size, output, y_var,
                                       y_target)
       data = data + perturbed_matrix
       data = torch.clamp(data, self.min_value, self.max_value)

@@ -15,18 +15,18 @@ class Test_Attack:
     self.batch_size = testloader.batch_size
     self.eval_steps = eval_steps
 
-  def test(self):
+  def test(self, model):
 
     accuracies = []
     examples = []  # Run test for each epsilon
     for eps in self.epsilons:
       logger.debug('Performing attack with eps {}'.format(eps))
-      acc, ex = self.evaluate(eps, self.eval_steps)
+      acc, ex = self.evaluate(model, eps, self.eval_steps)
       accuracies.append(acc)
       examples.append(ex)
     return accuracies, examples
 
-  def evaluate(self, epsilon, eval_steps=None):
+  def evaluate(self, model, epsilon, eval_steps=None):
     total_examples = len(
       self.testloader
     ) * self.batch_size if eval_steps is None else self.batch_size * eval_steps
@@ -46,7 +46,7 @@ class Test_Attack:
       inputs, targets = inputs.to(device), targets.to(device)
 
       init_pred, perturbed_data, final_pred = self.attack.generate(
-        inputs, epsilon, y=targets)
+        model, inputs, epsilon, y=targets)
       total += targets.size(0)
       correct += final_pred.eq(targets).sum().item()
     final_acc = correct / float(total)
