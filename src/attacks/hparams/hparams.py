@@ -16,7 +16,7 @@ class HParams():
 def fgsm():
   hps = HParams()
   hps.name = "FGSM"
-  self.epsilons = [x / 255 for x in range(0, 4)]
+  hps.epsilons = [x / 255 for x in range(0, 4)]
   return hps
 
 
@@ -28,5 +28,5 @@ def pgd():
   hps.random_start = True
   hps.iters = 40
   hps.step_size = 0.01
-  self.epsilons = [x / 255 for x in range(0, 9)]
+  hps.epsilons = [x / 255 for x in range(0, 9)]
   return hps
