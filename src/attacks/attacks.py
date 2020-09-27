@@ -145,6 +145,6 @@ class PGD(FGSM):
       data = X_img + perturbation
     perturbed_image = data
     perturbed_image = perturbed_image.to(self.device)
-    output = model(perturbed_image, self.hparams)
+    output = model(perturbed_image)
     final_pred = output.max(1)[1]
     return init_pred, perturbed_image, final_pred

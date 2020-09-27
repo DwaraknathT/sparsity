@@ -20,7 +20,6 @@ class Test_Attack:
     accuracies = []
     examples = []  # Run test for each epsilon
     for eps in self.epsilons:
-      logger.debug('Performing attack with eps {}'.format(eps))
       acc, ex = self.evaluate(model, eps, self.eval_steps)
       accuracies.append(acc)
       examples.append(ex)
@@ -49,7 +48,7 @@ class Test_Attack:
         model, inputs, epsilon, y=targets)
       total += targets.size(0)
       correct += final_pred.eq(targets).sum().item()
-    final_acc = correct / float(total)
+    final_acc = (correct / float(total)) * 100
     logger.info("Epsilon: {}\tTest Accuracy = {} / {} = {}".format(
       epsilon, correct, total, final_acc))
 
