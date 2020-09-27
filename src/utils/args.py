@@ -86,13 +86,14 @@ def get_args():
   if args.run_name is None:
     raise ValueError('Ernter a run name')
   if args.model_type == 'dense':
-    args.output_dir = '{}/{}/lr_{}/'.format(
+    args.output_dir = '{}/{}/lr_{}/{}'.format(
       args.dataset,
       args.model,
-      args.lr_schedule
+      args.lr_schedule,
+      args.run_name
     )
   else:
-    args.output_dir = '{}/{}/lr_{}/{}/{}_{}_{}/{}/'.format(
+    args.output_dir = '{}/{}/lr_{}/{}/{}_{}_{}/{}/{}'.format(
       args.dataset,
       args.model,
       args.lr_schedule,
@@ -100,7 +101,8 @@ def get_args():
       args.start_step,
       args.end_step,
       args.prune_freq,
-      args.ramp_type
+      args.ramp_type,
+      args.run_name
     )
 
   return args
