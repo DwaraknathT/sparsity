@@ -1,3 +1,5 @@
+import os
+
 import numpy as np
 import torch
 import torch.backends.cudnn as cudnn
@@ -15,6 +17,21 @@ def set_lr(optimizer, lr):
   for param_group in optimizer.param_groups:
     param_group['lr'] = lr
   return optimizer
+
+
+def save_model(net,
+               optimizer,
+               directory,
+               filename):
+  logger.info('Saving..')
+  state = {
+    'net': net.state_dict(),
+    'optimizer': optimizer.state_dict(),
+  }
+  if not os.path.isdir(directory):
+    os.makedirs(directory)
+
+  torch.save(state, '{}/{}.t7'.format(directory, filename))
 
 
 class LrScheduler:

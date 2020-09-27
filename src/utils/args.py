@@ -5,6 +5,8 @@ parser = argparse.ArgumentParser(description='Ensemble Training')
 parser.add_argument(
   '--model', default='vgg19_bn', type=str, help='Model to use')
 parser.add_argument(
+  '--run_name', default=None, type=str, help='Name of this run')
+parser.add_argument(
   '--model_type', default='dense', type=str, help='Dense/sparse')
 parser.add_argument(
   '--seed', default=1, type=int, help='random seed')
@@ -81,6 +83,8 @@ parser.add_argument(
 
 def get_args():
   args = parser.parse_args()
+  if args.run_name is None:
+    raise ValueError('Ernter a run name')
   if args.model_type == 'dense':
     args.output_dir = '{}/{}/lr_{}/'.format(
       args.dataset,

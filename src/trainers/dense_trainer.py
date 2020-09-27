@@ -1,11 +1,11 @@
 import torch
 
-from src.attacks.registry import get_attack
 from src.attacks.hparams.registry import get_attack_params
+from src.attacks.registry import get_attack
 from src.attacks.test_attack import Test_Attack
 from src.models.registry import register
 from src.utils.logger import get_logger
-from src.utils.utils import LrScheduler
+from src.utils.utils import LrScheduler, save_model
 from src.utils.utils import get_lr, get_model, mask_check
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -20,6 +20,7 @@ class DenseTrainer:
   def __init__(self, args):
     self.args = args
     self.model, self.criterion, self.optimizer = get_model(self.args)
+    self.best_acc = 0
 
   def test_attack(self, attack, dataloader):
     attack_params = get_attack_params(attack)
@@ -98,12 +99,19 @@ class DenseTrainer:
                                                                         get_lr(self.optimizer)))
         logger.info(string)
         test_loss, test_acc = self.test(testloader)
+        if self.best_acc < test_acc:
+          self.best_acc = test_acc
+          save_model(self.model, self.optimizer, self.args.output_dir, self.args.run_name)
         logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(test_loss,
                                                                      test_acc))
 
     logger.info('Training completed')
     test_loss, test_acc = self.test(testloader)
+    if self.best_acc < test_acc:
+      self.best_acc = test_acc
+      save_model(self.model, self.optimizer, self.args.output_dir, 'model')
     logger.info("Final Test Loss: {:.4f} Final Test Accuracy: {:.4f}".format(test_loss,
                                                                              test_acc))
+    logger.info("Best test accuracy {:.4f}")
 
     return self.model
