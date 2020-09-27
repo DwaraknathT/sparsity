@@ -48,12 +48,12 @@ class DenseTrainer:
     # Get model, optimizer, criterion, lr_scheduler
     model, criterion, optimizer = get_model(self.args)
     model.train()
-    scheduler = LrScheduler(self.args)
     if self.args.steps is None:
       self.args.steps = self.args.epochs * len(trainloader)
 
     logger.info('Mask check before training')
     mask_check(model)
+    scheduler = LrScheduler(self.args)
 
     train_loss = 0
     correct = 0

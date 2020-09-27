@@ -50,10 +50,10 @@ class SparseTrainer:
     # Get model, optimizer, criterion, lr_scheduler
     model, criterion, optimizer = get_model(self.args)
     model.train()
-    scheduler = LrScheduler(self.args)
     if self.args.steps is None:
       self.args.steps = self.args.epochs * len(trainloader)
     pruner = Pruner(self.args, model)
+    scheduler = LrScheduler(self.args)
 
     logger.info('Mask check before training')
     mask_check(model)
