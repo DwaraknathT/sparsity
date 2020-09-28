@@ -14,7 +14,7 @@ parser.add_argument(
 parser.add_argument(
   '--mode', default='train', type=bool, help='In eval mode or not')
 parser.add_argument(
-  '--load_prev', default=False, type=bool, help='Load prev weights')
+  '--load_model', default=False, type=bool, help='Load prev weights')
 parser.add_argument(
   '--resume', default=False, type=bool, help='Resume training')
 

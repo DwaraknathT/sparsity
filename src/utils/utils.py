@@ -34,6 +34,21 @@ def save_model(net,
   torch.save(state, '{}/{}.t7'.format(directory, filename))
 
 
+def load_model(net,
+               path,
+               name):
+  try:
+    logger.info('Loading saved model..')
+    prev_model = '{}/{}.t7'.format(path, name)
+    checkpoint = torch.load(prev_model)
+    net.load_state_dict(checkpoint['net'])
+  except FileNotFoundError:
+    logger.error('Sparse model not found')
+    raise FileNotFoundError
+
+  return net
+
+
 class LrScheduler:
   def __init__(self, args):
     self.args = args

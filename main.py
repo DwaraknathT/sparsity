@@ -30,7 +30,10 @@ def main():
   trainloader, testloader = get_data(args)
   # get trainer
   trainer = trainers[args.model_type](args)
-  model = trainer.train(trainloader, testloader)
+  if args.mode == 'train':
+    model = trainer.train(trainloader, testloader)
+  elif args.mode == 'eval':
+    trainer.test(testloader)
   trainer.test_attack(args.attack, testloader)
 
 

@@ -5,7 +5,7 @@ from src.attacks.registry import get_attack
 from src.attacks.test_attack import Test_Attack
 from src.models.registry import register
 from src.utils.logger import get_logger
-from src.utils.utils import LrScheduler, save_model
+from src.utils.utils import LrScheduler, save_model, load_model
 from src.utils.utils import get_lr, get_model, mask_check
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -21,6 +21,8 @@ class DenseTrainer:
     self.args = args
     self.model, self.criterion, self.optimizer = get_model(self.args)
     self.best_acc = 0
+    if args.load_model:
+      self.model = load_model(self.model, self.args.output_dir, self.args.run_name)
 
   def test_attack(self, attack, dataloader):
     attack_params = get_attack_params(attack)
