@@ -31,8 +31,10 @@ def main():
   # get trainer
   trainer = trainers[args.model_type](args)
   if args.mode == 'train':
+    logger.info('Starting training')
     model = trainer.train(trainloader, testloader)
   elif args.mode == 'eval':
+    logger.info('Starting evaluation')
     loss, acc = trainer.test(testloader)
     logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(loss,
                                                                  acc))

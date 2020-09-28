@@ -22,6 +22,7 @@ class Attack(object):
 
     self.attack = name
     self.model = model
+    self.args = args
     self.model_name = str(model).split("(")[0]
 
     self.training = model.training

@@ -12,7 +12,7 @@ parser.add_argument(
 parser.add_argument(
   '--seed', default=1, type=int, help='random seed')
 parser.add_argument(
-  '--mode', default='train', type=bool, help='In eval mode or not')
+  '--mode', default='train', type=str, help='In eval mode or not')
 parser.add_argument(
   '--load_model', default=False, type=bool, help='Load prev weights')
 parser.add_argument(
