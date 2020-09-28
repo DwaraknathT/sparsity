@@ -8,13 +8,13 @@ logger = get_logger(__name__)
 
 
 class Test_Attack:
-  def __init__(self, args, criterion, testloader, epsilons, eval_steps):
+  def __init__(self, args, criterion, testloader):
     self.attack = get_attack(criterion, args)
     self.testloader = testloader
     self.device = device
-    self.epsilons = epsilons
+    self.epsilons = args.eps
     self.batch_size = testloader.batch_size
-    self.eval_steps = eval_steps
+    self.eval_steps = args.eval_steps
 
   def test(self, model):
     accuracies = []
@@ -26,9 +26,9 @@ class Test_Attack:
     return accuracies, examples
 
   def evaluate(self, attack, model, epsilon, eval_steps=None):
-    # total_examples = len(
-    #  self.testloader
-    # ) * self.batch_size if eval_steps is None else self.batch_size * eval_steps
+    total_examples = len(
+      self.testloader
+     ) * self.batch_size if eval_steps is None else self.batch_size * eval_steps
 
     # eval_step_no = 0
     correct = 0
@@ -37,15 +37,15 @@ class Test_Attack:
     n_epochs = 1
     iterator = iter(self.testloader)
     for batch_idx in range(eval_steps):
-
       if batch_idx == (n_epochs * len(self.testloader)):
         n_epochs = n_epochs + 1
         iterator = iter(self.testloader)
       inputs, targets = iterator.next()
       inputs, targets = inputs.to(device), targets.to(device)
       # init_pred = model(inputs)
-      perturbed_data = self.attack(model, inputs, targets, epsilon)
+      perturbed_data = self.attack.forward(model, inputs, targets, epsilon)
       final_pred = model(perturbed_data)
+      final_pred = final_pred.max(1)[1]
       total += targets.size(0)
       correct += final_pred.eq(targets).sum().item()
     final_acc = (correct / float(total)) * 100

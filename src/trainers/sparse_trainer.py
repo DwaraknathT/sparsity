@@ -27,11 +27,9 @@ class SparseTrainer:
 
   def test_attack(self, attack, dataloader):
     attack_params = get_attack_params(attack)
-    attack = get_attack(self.criterion, attack_params)
-    attacker = Test_Attack(attack,
-                           dataloader,
-                           attack_params.epsilons,
-                           attack_params.eval_steps)
+    attacker = Test_Attack(attack_params,
+                           self.criterion,
+                           dataloader)
     attacker.test(self.model)
 
   def test(self,

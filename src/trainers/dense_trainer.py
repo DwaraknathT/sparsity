@@ -27,9 +27,8 @@ class DenseTrainer:
   def test_attack(self, attack, dataloader):
     attack_params = get_attack_params(attack)
     attacker = Test_Attack(attack_params,
-                           dataloader,
-                           attack_params.epsilons,
-                           attack_params.eval_steps)
+                           self.criterion,
+                           dataloader)
     attacker.test(self.model)
 
   def test(self, testloader):

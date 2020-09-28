@@ -1,7 +1,8 @@
 import torch
 
-from src.attacks.base import Attack
 from src.attacks.registry import register
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 @register
@@ -31,8 +32,8 @@ class PGD:
   """
 
   def __init__(self, criterion, args):
-    #super(PGD, self).__init__("PGD", model)
-    #self.model = model
+    # super(PGD, self).__init__("PGD", model)
+    # self.model = model
     self.args = args
     self.eps = 0.3
     self.alpha = args.alpha
@@ -44,9 +45,9 @@ class PGD:
     r"""
     Overridden.
     """
-    images = images.to(self.device)
-    labels = labels.to(self.device)
-    #labels = self._transform_label(images, labels)
+    images = images.to(device)
+    labels = labels.to(device)
+    # labels = self._transform_label(images, labels)
 
     adv_images = images.clone().detach()
     if eps is None:
@@ -61,7 +62,7 @@ class PGD:
       adv_images.requires_grad = True
       outputs = model(adv_images)
 
-      cost = self._targeted * self.criterion(outputs, labels).to(self.device)
+      cost = self.criterion(outputs, labels).to(device)
 
       grad = torch.autograd.grad(cost, adv_images,
                                  retain_graph=False, create_graph=False)[0]

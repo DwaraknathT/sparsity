@@ -1,7 +1,8 @@
 import torch
 
-from src.attacks.base import Attack
 from src.attacks.registry import register
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
 @register
@@ -28,8 +29,8 @@ class FGSM:
 
   """
 
-  def __init__(self,criterion, args):
-    #super(FGSM, self).__init__("FGSM", model)
+  def __init__(self, criterion, args):
+    # super(FGSM, self).__init__("FGSM", model)
     self.args = args
     self.eps = 0.007
     self.criterion = criterion
@@ -38,15 +39,15 @@ class FGSM:
     r"""
     Overridden.
     """
-    images = images.to(self.device)
-    labels = labels.to(self.device)
-    #labels = self._transform_label(images, labels)
+    images = images.to(device)
+    labels = labels.to(device)
+    # labels = self._transform_label(images, labels)
     if eps is None:
       eps = self.eps
 
     images.requires_grad = True
     outputs = model(images)
-    cost = self._targeted * self.criterion(outputs, labels).to(self.device)
+    cost = self.criterion(outputs, labels).to(device)
 
     grad = torch.autograd.grad(cost, images,
                                retain_graph=False, create_graph=False)[0]
