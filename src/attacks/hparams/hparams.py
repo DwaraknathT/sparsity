@@ -26,6 +26,17 @@ def pgd():
   hps.name = "PGD"
   hps.random_start = True
   hps.steps = 40
-  hps.alpha = 2/255
+  hps.alpha = 2 / 255
+  hps.eps = [x / 255 for x in range(0, 9)]
+  return hps
+
+
+@register
+def apgd():
+  hps = HParams()
+  hps.name = "APGD"
+  hps.random_start = True
+  hps.steps = 40
+  hps.alpha = 2 / 255
   hps.eps = [x / 255 for x in range(0, 9)]
   return hps
