@@ -1,4 +1,5 @@
 import argparse
+import os
 
 parser = argparse.ArgumentParser(description='Ensemble Training')
 # Model Parameters
@@ -104,5 +105,15 @@ def get_args():
       args.ramp_type,
       args.run_name
     )
+  if args.use_colab:
+    from google.colab import drive
+    drive.mount('/content/gdrive')
+    colab_str = '/content/gdrive/My Drive/sparsity/'
+    OUTPUT_DIR = '{}/{}'.format(colab_str, args.output_dir)
+    if not os.path.isdir(OUTPUT_DIR): os.makedirs(OUTPUT_DIR)
+    args.output_dir = OUTPUT_DIR
+  else:
+    os.makedirs('runs/{}'.format(args.output_dir))
+    args.output_dir = ('runs/{}'.format(args.output_dir))
 
   return args

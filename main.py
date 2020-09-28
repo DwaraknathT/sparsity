@@ -5,11 +5,10 @@ from src.trainers.dense_trainer import DenseTrainer
 from src.trainers.sparse_trainer import SparseTrainer
 from src.utils.args import get_args
 from src.utils.datasets import get_data
-from src.utils.logger import get_logger, setup_dirs
+from src.utils.logger import get_logger
 
 # Get parameters and setup directories, loggers
 args = get_args()
-setup_dirs()
 logger = get_logger(__name__)
 
 # Seed seeds for reproducibility
