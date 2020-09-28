@@ -49,7 +49,7 @@ class Test_Attack:
       total += targets.size(0)
       correct += final_pred.eq(targets).sum().item()
     final_acc = (correct / float(total)) * 100
-    logger.info("Epsilon: {}\tTest Accuracy = {} / {} = {}".format(
+    logger.info("Epsilon: {:.4f}\tTest Accuracy = {} / {} = {:.4f}".format(
       epsilon, correct, total, final_acc))
 
     return final_acc, adv_examples

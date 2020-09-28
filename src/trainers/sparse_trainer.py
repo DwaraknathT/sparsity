@@ -1,9 +1,12 @@
 import torch
 
+from src.attacks.hparams.registry import get_attack_params
+from src.attacks.registry import get_attack
+from src.attacks.test_attack import Test_Attack
 from src.models.registry import register
 from src.utils.logger import get_logger
 from src.utils.prune import Pruner
-from src.utils.utils import get_lr, set_lr, LrScheduler
+from src.utils.utils import get_lr, LrScheduler, save_model
 from src.utils.utils import get_model, mask_check, mask_sparsity
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -17,20 +20,29 @@ cifar_10_classes = ('plane', 'car', 'bird', 'cat',
 class SparseTrainer:
   def __init__(self, args):
     self.args = args
+    self.model, self.criterion, self.optimizer = get_model(self.args)
+    self.best_acc = 0
+
+  def test_attack(self, attack, dataloader):
+    attack_params = get_attack_params(attack)
+    attack = get_attack(self.criterion, attack_params)
+    attacker = Test_Attack(attack,
+                           dataloader,
+                           attack_params.epsilons,
+                           attack_params.eval_steps)
+    attacker.test(self.model)
 
   def test(self,
-           testloader,
-           model,
-           criterion):
-    model.eval()
+           testloader):
+    self.model.eval()
     test_loss = 0
     correct = 0
     total = 0
     with torch.no_grad():
       for batch_idx, (inputs, targets) in enumerate(testloader):
         inputs, targets = inputs.to(device), targets.to(device)
-        outputs = model(inputs)
-        loss = criterion(outputs, targets)
+        outputs = self.model(inputs)
+        loss = self.criterion(outputs, targets)
 
         test_loss += loss.item()
         _, predicted = outputs.max(1)
@@ -39,7 +51,7 @@ class SparseTrainer:
 
     acc = 100. * correct / total
 
-    model.train()
+    self.model.train()
     return loss, acc
 
   # Training
@@ -48,15 +60,14 @@ class SparseTrainer:
             testloader):
     # Fill up the steps
     # Get model, optimizer, criterion, lr_scheduler
-    model, criterion, optimizer = get_model(self.args)
-    model.train()
+    self.model.train()
     if self.args.steps is None:
       self.args.steps = self.args.epochs * len(trainloader)
-    pruner = Pruner(self.args, model)
+    pruner = Pruner(self.args, self.model)
     scheduler = LrScheduler(self.args)
 
     logger.info('Mask check before training')
-    mask_check(model)
+    mask_check(self.model)
 
     train_loss = 0
     correct = 0
@@ -72,13 +83,13 @@ class SparseTrainer:
 
       inputs, targets = iterator.next()
       inputs, targets = inputs.to(device), targets.to(device)
-      optimizer.zero_grad()
-      outputs = model(inputs)
-      loss = criterion(outputs, targets)
+      self.optimizer.zero_grad()
+      outputs = self.model(inputs)
+      loss = self.criterion(outputs, targets)
       loss.backward()
 
-      optimizer.step()
-      optimizer = scheduler.step(optimizer, step)
+      self.optimizer.step()
+      self.optimizer = scheduler.step(self.optimizer, step)
       train_loss += loss.item()
 
       _, predicted = outputs.max(1)
@@ -90,21 +101,28 @@ class SparseTrainer:
                   "Train Accuracy: {:.4f} Learning Rate {:.4f} ".format(step,
                                                                         loss,
                                                                         (correct / total),
-                                                                        get_lr(optimizer)))
+                                                                        get_lr(self.optimizer)))
         logger.info(string)
-        test_loss, test_acc = self.test(testloader, model, criterion)
+        test_loss, test_acc = self.test(testloader)
+        if self.best_acc < test_acc:
+          self.best_acc = test_acc
+          save_model(self.model, self.optimizer, self.args.output_dir, self.args.run_name)
         logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(test_loss,
                                                                      test_acc))
-        logger.info('Sparsities {}'.format(mask_sparsity(model)))
+        logger.info('Sparsities {}'.format(mask_sparsity(self.model)))
 
-      model = pruner.step(model, step)
+      self.model = pruner.step(self.model, step)
 
     logger.info('Training completed')
-    test_loss, test_acc = self.test(testloader, model, criterion)
+    test_loss, test_acc = self.test(testloader)
+    if self.best_acc < test_acc:
+      self.best_acc = test_acc
+      save_model(self.model, self.optimizer, self.args.output_dir, self.args.run_name)
     logger.info("Final Test Loss: {:.4f} Final Test Accuracy: {:.4f}".format(test_loss,
                                                                              test_acc))
 
     logger.info('Mask check after training')
-    mask_check(model)
+    mask_check(self.model)
+    logger.info("Best test accuracy {:.4f}".format(self.best_acc))
 
-    return model
+    return self.model
