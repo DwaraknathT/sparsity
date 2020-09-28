@@ -33,7 +33,9 @@ def main():
   if args.mode == 'train':
     model = trainer.train(trainloader, testloader)
   elif args.mode == 'eval':
-    trainer.test(testloader)
+    loss, acc = trainer.test(testloader)
+    logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(loss,
+                                                                 acc))
   trainer.test_attack(args.attack, testloader)
 
 
