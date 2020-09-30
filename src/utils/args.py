@@ -51,6 +51,8 @@ parser.add_argument(
   type=str,
   help='Output directory for storing ckpts. Default is in runs/hparams')
 parser.add_argument(
+  '--dataset', default='cifar10', type=str, help='Dataset to use')
+parser.add_argument(
   '--use_colab', type=bool, default=False, help='Use Google colaboratory')
 
 # sparsity params
@@ -80,6 +82,7 @@ parser.add_argument(
 # Attack params
 parser.add_argument(
   '--attack', default='fgsm', type=str, help='Adversarial attack to use')
+
 
 
 def get_args():

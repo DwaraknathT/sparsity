@@ -9,6 +9,7 @@ from src.utils.prune import Pruner
 from src.utils.utils import get_lr, LrScheduler, save_model, load_model
 from src.utils.utils import get_model, mask_check, mask_sparsity
 
+
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 logger = get_logger(__name__)
 
@@ -91,7 +92,6 @@ class SparseTrainer:
       self.optimizer.step()
       self.optimizer = scheduler.step(self.optimizer, step)
       train_loss += loss.item()
-
       _, predicted = outputs.max(1)
       total += targets.size(0)
       correct += predicted.eq(targets).sum().item()
