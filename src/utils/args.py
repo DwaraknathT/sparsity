@@ -30,9 +30,9 @@ parser.add_argument(
 parser.add_argument(
   '--lr_schedule', default='linear', type=str, help='LR scheduler')
 parser.add_argument(
-  '--up_step', default=10000, type=int, help='No of cycles in cyclical lr')
+  '--lr_cycle', default='full', type=str, help='Full or half cycle')
 parser.add_argument(
-  '--down_step', default=10000, type=int, help='No of cycles in cyclical lr')
+  '--step_size', default=10000, type=int, help='Cyclic lr step size')
 parser.add_argument(
   '--milestones', default=[25000, 50000, 75000, 90000], type=list, help='Multi step lr')
 
@@ -50,8 +50,6 @@ parser.add_argument(
   '--output_dir',
   type=str,
   help='Output directory for storing ckpts. Default is in runs/hparams')
-parser.add_argument(
-  '--dataset', default='cifar10', type=str, help='Dataset to use')
 parser.add_argument(
   '--use_colab', type=bool, default=False, help='Use Google colaboratory')
 
@@ -77,7 +75,7 @@ parser.add_argument(
 parser.add_argument(
   '--ramp_type', default='linear', type=str, help='Ramp type.')
 parser.add_argument(
-  '--ramp_cycle_type', default='full', type=str, help='Ramp cycle type')
+  '--ramp_cycle', default='full', type=str, help='Ramp cycle type')
 
 # Attack params
 parser.add_argument(

@@ -1,3 +1,4 @@
+import math
 import os
 
 import numpy as np
@@ -65,9 +66,23 @@ class LrScheduler:
       factor = 0.01
     return self.init_lr * factor
 
+  def cyclic_schedule(self, step):
+    if self.args.lr_cycle == 'half':
+      sin_inner = (math.pi / 2 * (step % self.args.step_size) / self.args.step_size)
+      lr = (self.args.lr * math.sin(sin_inner))
+    elif self.args.lr_cycle == 'full':
+      sin_inner = (math.pi / 2 * (step / self.args.step_size))
+      lr = (self.args.lr * abs(math.sin(sin_inner)))
+    else:
+      raise NotImplementedError
+
+    return lr
+
   def step(self, optimizer, step):
     if self.args.lr_schedule == 'linear':
       lr = self.linear_schedule(step)
+    elif self.args.lr_schedule == 'cyclic':
+      lr = self.cyclic_schedule(step)
     else:
       raise NotImplementedError('Only use cyclic, linear, step')
     set_lr(optimizer, lr)
