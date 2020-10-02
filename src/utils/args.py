@@ -32,7 +32,9 @@ parser.add_argument(
 parser.add_argument(
   '--lr_cycle', default='full', type=str, help='Full or half cycle')
 parser.add_argument(
-  '--step_size', default=10000, type=int, help='Cyclic lr step size')
+  '--up_step', default=5000, type=int, help='Cyclic lr step size')
+parser.add_argument(
+  '--down_step', default=5000, type=int, help='Cyclic lr step size')
 parser.add_argument(
   '--milestones', default=[25000, 50000, 75000, 90000], type=list, help='Multi step lr')
 
@@ -114,7 +116,8 @@ def get_args():
     if not os.path.isdir(OUTPUT_DIR): os.makedirs(OUTPUT_DIR)
     args.output_dir = OUTPUT_DIR
   else:
-    os.makedirs('runs/{}'.format(args.output_dir))
+    output_dir = 'runs/{}'.format(args.output_dir)
+    if not os.path.isdir(output_dir): os.makedirs(output_dir)
     args.output_dir = ('runs/{}'.format(args.output_dir))
 
   return args

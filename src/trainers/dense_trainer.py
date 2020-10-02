@@ -62,7 +62,7 @@ class DenseTrainer:
 
     logger.info('Mask check before training')
     mask_check(self.model)
-    scheduler = LrScheduler(self.args)
+    scheduler = LrScheduler(self.args, self.optimizer)
 
     train_loss = 0
     correct = 0

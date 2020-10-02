@@ -1,4 +1,3 @@
-import math
 import os
 
 import numpy as np
@@ -51,10 +50,14 @@ def load_model(net,
 
 
 class LrScheduler:
-  def __init__(self, args):
+  def __init__(self, args, optimizer):
     self.args = args
     self.steps = args.steps
     self.init_lr = args.lr
+    if args.lr_schedule == 'cyclic':
+      self.cyclic_lr = torch.optim.lr_scheduler.CyclicLR(
+        optimizer, base_lr=0, max_lr=args.lr,
+        step_size_up=args.up_step, step_size_down=args.down_step)
 
   def linear_schedule(self, step):
     t = (step) / (self.steps)
@@ -66,26 +69,14 @@ class LrScheduler:
       factor = 0.01
     return self.init_lr * factor
 
-  def cyclic_schedule(self, step):
-    if self.args.lr_cycle == 'half':
-      sin_inner = (math.pi / 2 * (step % self.args.step_size) / self.args.step_size)
-      lr = (self.args.lr * math.sin(sin_inner))
-    elif self.args.lr_cycle == 'full':
-      sin_inner = (math.pi / 2 * (step / self.args.step_size))
-      lr = (self.args.lr * abs(math.sin(sin_inner)))
-    else:
-      raise NotImplementedError
-
-    return lr
-
   def step(self, optimizer, step):
     if self.args.lr_schedule == 'linear':
       lr = self.linear_schedule(step)
+      set_lr(optimizer, lr)
     elif self.args.lr_schedule == 'cyclic':
-      lr = self.cyclic_schedule(step)
+      self.cyclic_lr.step()
     else:
       raise NotImplementedError('Only use cyclic, linear, step')
-    set_lr(optimizer, lr)
     return optimizer
 
 
