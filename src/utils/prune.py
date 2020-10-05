@@ -41,6 +41,8 @@ class Pruner:
 
     self.start_step = int(args.start_step * args.steps)
     self.end_step = int(args.end_step * args.steps)
+    if self.args.ramp_cycle_step is None:
+      self.args.ramp_cycle_step = args.down_step
 
   def compute_sparsity(self, step):
     if self.args.ramp_type == "linear":

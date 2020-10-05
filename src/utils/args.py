@@ -75,9 +75,9 @@ parser.add_argument(
 parser.add_argument(
   '--prune_type', default='weight', type=str, help='Weight or unit pruning.')
 parser.add_argument(
-  '--ramp_type', default='linear', type=str, help='Ramp type.')
+  '--ramp_type', default='linear', type=str, help='Ramp type: linear, full_cycle, half_cycle')
 parser.add_argument(
-  '--ramp_cycle', default='full', type=str, help='Ramp cycle type')
+  '--ramp_cycle_step', default=None, type=str, help='Ramp cycle step')
 
 # Attack params
 parser.add_argument(

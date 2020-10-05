@@ -66,6 +66,7 @@ class SparseTrainer:
       self.args.steps = self.args.epochs * len(trainloader)
     pruner = Pruner(self.args, self.model)
     scheduler = LrScheduler(self.args, self.optimizer)
+    self.end_step = int(self.args.end_step * self.args.steps)
 
     logger.info('Mask check before training')
     mask_check(self.model)
@@ -104,7 +105,7 @@ class SparseTrainer:
                                                                         get_lr(self.optimizer)))
         logger.info(string)
         test_loss, test_acc = self.test(testloader)
-        if self.best_acc < test_acc:
+        if self.best_acc < test_acc and step > self.end_step:
           self.best_acc = test_acc
           save_model(self.model, self.optimizer, self.args.output_dir, self.args.run_name)
         logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(test_loss,
