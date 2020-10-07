@@ -77,7 +77,7 @@ parser.add_argument(
 parser.add_argument(
   '--ramp_type', default='linear', type=str, help='Ramp type: linear, full_cycle, half_cycle')
 parser.add_argument(
-  '--ramp_cycle_step', default=None, type=str, help='Ramp cycle step')
+  '--ramp_cycle_step', default=None, type=int, help='Ramp cycle step')
 
 # mask params
 parser.add_argument(
