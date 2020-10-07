@@ -111,6 +111,7 @@ class SparseTrainer:
         logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(test_loss,
                                                                      test_acc))
         logger.info('Sparsities {}'.format(mask_sparsity(self.model)))
+        logger.info('-------------------')
 
       self.model = pruner.step(self.model, step)
 

@@ -104,6 +104,7 @@ class DenseTrainer:
           save_model(self.model, self.optimizer, self.args.output_dir, self.args.run_name)
         logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(test_loss,
                                                                      test_acc))
+        logger.info('-------------------')
 
     logger.info('Training completed')
     test_loss, test_acc = self.test(testloader)

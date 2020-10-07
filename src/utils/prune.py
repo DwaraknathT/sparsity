@@ -3,6 +3,10 @@ import math
 import numpy as np
 import torch
 
+from src.utils.logger import get_logger
+
+logger = get_logger(__name__)
+
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 
@@ -35,14 +39,18 @@ class Pruner:
   def __init__(self, args, model):
     self.args = args
     self.initial_masks = []
+    self.union_masks = []
+    self.total_masks = 0
     for module in model.modules():
       if hasattr(module, 'mask'):
         self.initial_masks.append(module.mask.data)
+        self.union_masks.append(torch.zeros_like(module.mask.data))
 
     self.start_step = int(args.start_step * args.steps)
     self.end_step = int(args.end_step * args.steps)
     if self.args.ramp_cycle_step is None:
-      self.args.ramp_cycle_step = args.down_step
+      if args.ramp_type == 'full_cycle':
+        self.args.ramp_cycle_step = args.down_step
 
   def compute_sparsity(self, step):
     if self.args.ramp_type == "linear":
@@ -50,6 +58,8 @@ class Pruner:
           self.end_step - self.start_step)
       prune_compute = self.args.initial_sparsity + rate_of_increase * (
           step - self.start_step)
+    elif self.args.ramp_type == "constant":
+      prune_compute = self.args.final_sparsity
     elif self.args.ramp_type == "half_cycle":
       sin_inner = (math.pi / 2 * (step % self.args.ramp_cycle_step) / self.args.ramp_cycle_step)
       prune_compute = (self.args.final_sparsity * math.sin(sin_inner))
@@ -94,8 +104,46 @@ class Pruner:
           module.mask.data = module_mask
     return model
 
+  def union_mask(self, model, step):
+    # save masks
+    sparsities = []
+    count = 0
+    if (step < (self.end_step - self.args.ramp_cycle_step)):
+      if (step % self.args.ramp_cycle_step == 0) and (step != 0):
+        logger.info('Saving mask')
+        for module in model.modules():
+          if hasattr(module, 'mask'):
+            mask_sparsity = round(1. - np.sum(module.mask.detach().cpu().numpy())
+                                  / module.mask.detach().cpu().numpy().size, 2)
+            self.union_masks[count] = 1. - ((1. - self.union_masks[count]) * (1. - module.mask.data))
+            union_mask_sparsity = (round(1. - np.sum(self.union_masks[count].detach().cpu().numpy())
+                                         / self.union_masks[count].detach().cpu().numpy().size, 2))
+            self.total_masks += 1
+            count += 1
+            logger.info('Mask sparsity {:.2f} Union mask sparsity {:.2f}'.format(
+              mask_sparsity,
+              union_mask_sparsity
+            ))
+    elif (step == (self.end_step - self.args.ramp_cycle_step)):
+      logger.info('Updating masks to union mask')
+      for module in model.modules():
+        if hasattr(module, 'mask'):
+          module.mask.data = self.union_masks[count]
+          mask_sparsity = round(1. - np.sum(module.mask.detach().cpu().numpy())
+                                / module.mask.detach().cpu().numpy().size, 2)
+          sparsities.append(mask_sparsity)
+          count += 1
+      self.args.initial_sparsity = max(sparsities)
+      logger.info('Initial sparsity updated to {}'.format(self.args.initial_sparsity))
+      logger.info('Setting carry mask to true')
+      self.args.carry_mask = True
+
+    return model
+
   def ramping_prune(self, model, step):
     prune_percent = self.compute_sparsity(step)
+    if self.args.union_mask:
+      model = self.union_mask(model, step)
     if step == self.end_step: prune_percent = self.args.final_sparsity
     if self.start_step <= step < self.end_step:
       if step % self.args.prune_freq == 0:

@@ -79,6 +79,10 @@ parser.add_argument(
 parser.add_argument(
   '--ramp_cycle_step', default=None, type=str, help='Ramp cycle step')
 
+# mask params
+parser.add_argument(
+  '--union_mask', default=False, type=bool, help='Take the union of masks')
+
 # Attack params
 parser.add_argument(
   '--attack', default='fgsm', type=str, help='Adversarial attack to use')
