@@ -136,6 +136,8 @@ class Pruner:
       logger.info('Initial sparsity updated to {}'.format(self.args.initial_sparsity))
       logger.info('Setting carry mask to true')
       self.args.carry_mask = True
+      self.args.ramp_type = 'linear'
+      self.start_step = (self.end_step - self.args.ramp_cycle_step)
 
     return model
 
