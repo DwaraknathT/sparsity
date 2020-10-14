@@ -26,7 +26,9 @@ def resnet32_dense():
 @register
 def weight_linear_90_0_03_100_local_ncm_step():
   hps = Sparse()
+  hps.model = 'resnet32'
   hps.final_sparsity = 0.9
+  hps.end_step = 0.3
   hps.name = 'weight_linear_90_0_03_100_local_ncm_step'
 
   return hps
@@ -35,6 +37,7 @@ def weight_linear_90_0_03_100_local_ncm_step():
 @register
 def weight_linear_90_0_03_100_local_cm_step():
   hps = Sparse()
+  hps.model = 'resnet32'
   hps.final_sparsity = 0.9
   hps.end_step = 0.3
   hps.carry_mask = True
@@ -46,6 +49,7 @@ def weight_linear_90_0_03_100_local_cm_step():
 @register
 def weight_linear_90_0_05_100_local_ncm_step():
   hps = Sparse()
+  hps.model = 'resnet32'
   hps.final_sparsity = 0.9
   hps.name = 'weight_linear_90_0_05_100_local_ncm_step'
 
@@ -55,6 +59,7 @@ def weight_linear_90_0_05_100_local_ncm_step():
 @register
 def weight_linear_90_0_05_100_local_cm_step():
   hps = Sparse()
+  hps.model = 'resnet32'
   hps.final_sparsity = 0.9
   hps.carry_mask = True
   hps.name = 'weight_linear_90_0_05_100_local_cm_step'
