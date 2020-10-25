@@ -56,7 +56,7 @@ class LrScheduler:
     self.init_lr = args.lr
     if args.lr_schedule == 'cyclic':
       self.cyclic_lr = torch.optim.lr_scheduler.CyclicLR(
-        optimizer, base_lr=0, max_lr=args.lr,
+        optimizer, base_lr=0, max_lr=args.lr, cycle_momentum=False,
         step_size_up=args.up_step, step_size_down=args.down_step)
 
   def linear_schedule(self, step):
@@ -114,19 +114,6 @@ def get_model(args):
     optimizer = optim.Adam(
       params,
       lr=args.lr)
-
-    # if args.lr_schedule == 'step':
-    #   lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
-    #     optimizer,
-    #     args.milestones
-    #   )
-    # elif args.lr_schedule == 'cyclic':
-    #   lr_scheduler = torch.optim.lr_scheduler.CyclicLR(
-    #     optimizer,
-    #     base_lr=0,
-    #     max_lr=args.lr,
-    #     step_size_up=args.up_step,
-    #     step_size_down=args.down_step)
 
   criterion = nn.CrossEntropyLoss()
   if device == 'cuda':
