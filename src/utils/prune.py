@@ -91,7 +91,7 @@ class Pruner:
       if hasattr(module, 'mask'):
         mask_sparsity = round(1. - np.sum(module.mask.detach().cpu().numpy())
                               / module.mask.detach().cpu().numpy().size, 2)
-        if mask_sparsity <= self.args.final_sparsity:
+        if mask_sparsity <= self.args.final_sparsity and mask_sparsity <= prune_compute:
           if self.args.carry_mask:
             module_mask = prune(module.weight * module.mask,
                                 prune_compute,
@@ -117,6 +117,8 @@ class Pruner:
             self.union_masks[count] = 1. - ((1. - self.union_masks[count]) * (1. - module.mask.data))
             union_mask_sparsity = (round(1. - np.sum(self.union_masks[count].detach().cpu().numpy())
                                          / self.union_masks[count].detach().cpu().numpy().size, 2))
+            # Reset the masks
+            module.mask.data = torch.ones_like(module.mask.data)
             self.total_masks += 1
             count += 1
             logger.info('Mask sparsity {:.2f} Union mask sparsity {:.2f}'.format(
@@ -132,7 +134,7 @@ class Pruner:
                                 / module.mask.detach().cpu().numpy().size, 2)
           sparsities.append(mask_sparsity)
           count += 1
-      self.args.initial_sparsity = max(sparsities)
+      self.args.initial_sparsity = min(sparsities)
       logger.info('Initial sparsity updated to {}'.format(self.args.initial_sparsity))
       logger.info('Setting carry mask to true')
       self.args.carry_mask = True
