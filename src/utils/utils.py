@@ -19,11 +19,12 @@ def set_lr(optimizer, lr):
   return optimizer
 
 
-def save_model(net, optimizer, directory, filename):
+def save_model(step, net, optimizer, directory, filename):
   logger.info('Saving..')
   state = {
       'net': net.state_dict(),
       'optimizer': optimizer.state_dict(),
+      'step': step
   }
   if not os.path.isdir(directory):
     os.makedirs(directory)
@@ -31,17 +32,19 @@ def save_model(net, optimizer, directory, filename):
   torch.save(state, '{}/{}.t7'.format(directory, filename))
 
 
-def load_model(net, path, name):
+def load_model(net, optim, path, name):
   try:
     logger.info('Loading saved model..')
     prev_model = '{}/{}.t7'.format(path, name)
     checkpoint = torch.load(prev_model)
     net.load_state_dict(checkpoint['net'])
+    optim.load_state_dict(checkpoint['optimizer'])
+    step = checkpoint['step']
   except FileNotFoundError:
-    logger.error('Sparse model not found')
+    logger.error('Model not found')
     raise FileNotFoundError
 
-  return net
+  return net, optim, step
 
 
 class LrScheduler:

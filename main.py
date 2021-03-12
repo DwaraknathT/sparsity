@@ -20,10 +20,7 @@ torch.cuda.manual_seed_all(args.seed)  # gpu vars
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 args.device = device
 
-trainers = {
-  'dense': DenseTrainer,
-  'sparse': SparseTrainer
-}
+trainers = {'dense': DenseTrainer, 'sparse': SparseTrainer}
 
 
 def main():
@@ -36,9 +33,7 @@ def main():
   elif args.mode == 'eval':
     logger.info('Starting evaluation')
     loss, acc = trainer.test(testloader)
-    logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(loss,
-                                                                 acc))
-  trainer.test_attack(args.attack, testloader)
+    logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(loss, acc))
 
 
 if __name__ == '__main__':

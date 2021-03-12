@@ -22,9 +22,10 @@ class DenseTrainer:
     self.args = args
     self.model, self.criterion, self.optimizer = get_model(self.args)
     self.best_acc = 0
-    if args.load_model:
-      self.model = load_model(self.model, self.args.output_dir,
-                              self.args.run_name)
+    self.step = 0
+    if args.resume:
+      self.model, self.optimizer, self.step = load_model(
+          self.model, self.optimizer, self.args.output_dir, self.args.run_name)
 
   def test_attack(self, attack, dataloader):
     attack_params = get_attack_params(attack)
@@ -70,7 +71,7 @@ class DenseTrainer:
     n_epochs = 0
     iterator = iter(trainloader)
 
-    for batch_idx in range(0, self.args.steps, 1):
+    for batch_idx in range(self.step, self.args.steps, 1):
       step = batch_idx
       if batch_idx == n_epochs * len(trainloader):
         n_epochs = n_epochs + 1
@@ -99,7 +100,7 @@ class DenseTrainer:
         test_loss, test_acc = self.test(testloader)
         if self.best_acc < test_acc:
           self.best_acc = test_acc
-          save_model(self.model, self.optimizer, self.args.output_dir,
+          save_model(step, self.model, self.optimizer, self.args.output_dir,
                      self.args.run_name)
         logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(
             test_loss, test_acc))
@@ -109,7 +110,7 @@ class DenseTrainer:
     test_loss, test_acc = self.test(testloader)
     if self.best_acc < test_acc:
       self.best_acc = test_acc
-      save_model(self.model, self.optimizer, self.args.output_dir,
+      save_model(step, self.model, self.optimizer, self.args.output_dir,
                  self.args.run_name)
     logger.info("Final Test Loss: {:.4f} Final Test Accuracy: {:.4f}".format(
         test_loss, test_acc))
