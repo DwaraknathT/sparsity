@@ -100,7 +100,7 @@ class SparseTrainer:
                       step, loss, (correct / total), get_lr(self.optimizer)))
         logger.info(string)
         test_loss, test_acc = self.test(testloader)
-        if self.best_acc < test_acc and step > self.end_step:
+        if self.best_acc < test_acc:
           self.best_acc = test_acc
           save_model(step, self.model, self.optimizer, self.args.output_dir,
                      self.args.run_name)
