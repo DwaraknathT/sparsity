@@ -19,14 +19,11 @@ def set_lr(optimizer, lr):
   return optimizer
 
 
-def save_model(net,
-               optimizer,
-               directory,
-               filename):
+def save_model(net, optimizer, directory, filename):
   logger.info('Saving..')
   state = {
-    'net': net.state_dict(),
-    'optimizer': optimizer.state_dict(),
+      'net': net.state_dict(),
+      'optimizer': optimizer.state_dict(),
   }
   if not os.path.isdir(directory):
     os.makedirs(directory)
@@ -34,9 +31,7 @@ def save_model(net,
   torch.save(state, '{}/{}.t7'.format(directory, filename))
 
 
-def load_model(net,
-               path,
-               name):
+def load_model(net, path, name):
   try:
     logger.info('Loading saved model..')
     prev_model = '{}/{}.t7'.format(path, name)
@@ -50,14 +45,19 @@ def load_model(net,
 
 
 class LrScheduler:
+
   def __init__(self, args, optimizer):
     self.args = args
     self.steps = args.steps
     self.init_lr = args.lr
     if args.lr_schedule == 'cyclic':
       self.cyclic_lr = torch.optim.lr_scheduler.CyclicLR(
-        optimizer, base_lr=0, max_lr=args.lr, cycle_momentum=False,
-        step_size_up=args.up_step, step_size_down=args.down_step)
+          optimizer,
+          base_lr=0,
+          max_lr=args.lr,
+          cycle_momentum=False,
+          step_size_up=args.up_step,
+          step_size_down=args.down_step)
 
   def linear_schedule(self, step):
     t = (step) / (self.steps)
@@ -103,17 +103,13 @@ def get_model(args):
       params.append(m)
 
   if args.optim == 'sgd':
-    optimizer = optim.SGD(
-      params,
-      lr=args.lr,
-      momentum=0.9,
-      weight_decay=5e-4,
-      nesterov=True
-    )
+    optimizer = optim.SGD(params,
+                          lr=args.lr,
+                          momentum=0.9,
+                          weight_decay=5e-4,
+                          nesterov=True)
   elif args.optim == 'adam':
-    optimizer = optim.Adam(
-      params,
-      lr=args.lr)
+    optimizer = optim.Adam(params, lr=args.lr)
 
   criterion = nn.CrossEntropyLoss()
   if device == 'cuda':

@@ -11,24 +11,24 @@ from src.utils.utils import get_lr, get_model, mask_check
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 logger = get_logger(__name__)
 
-cifar_10_classes = ('plane', 'car', 'bird', 'cat',
-                    'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
+cifar_10_classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog',
+                    'horse', 'ship', 'truck')
 
 
 @register
 class DenseTrainer:
+
   def __init__(self, args):
     self.args = args
     self.model, self.criterion, self.optimizer = get_model(self.args)
     self.best_acc = 0
     if args.load_model:
-      self.model = load_model(self.model, self.args.output_dir, self.args.run_name)
+      self.model = load_model(self.model, self.args.output_dir,
+                              self.args.run_name)
 
   def test_attack(self, attack, dataloader):
     attack_params = get_attack_params(attack)
-    attacker = Test_Attack(attack_params,
-                           self.criterion,
-                           dataloader)
+    attacker = Test_Attack(attack_params, self.criterion, dataloader)
     attacker.test(self.model)
 
   def test(self, testloader):
@@ -93,26 +93,26 @@ class DenseTrainer:
 
       if batch_idx % self.args.eval_step == 0:
         string = ("Step {} Train Loss: {:.4f} "
-                  "Train Accuracy: {:.4f} Learning Rate {:.4f} ".format(step,
-                                                                        loss,
-                                                                        (correct / total),
-                                                                        get_lr(self.optimizer)))
+                  "Train Accuracy: {:.4f} Learning Rate {:.4f} ".format(
+                      step, loss, (correct / total), get_lr(self.optimizer)))
         logger.info(string)
         test_loss, test_acc = self.test(testloader)
         if self.best_acc < test_acc:
           self.best_acc = test_acc
-          save_model(self.model, self.optimizer, self.args.output_dir, self.args.run_name)
-        logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(test_loss,
-                                                                     test_acc))
+          save_model(self.model, self.optimizer, self.args.output_dir,
+                     self.args.run_name)
+        logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(
+            test_loss, test_acc))
         logger.info('-------------------')
 
     logger.info('Training completed')
     test_loss, test_acc = self.test(testloader)
     if self.best_acc < test_acc:
       self.best_acc = test_acc
-      save_model(self.model, self.optimizer, self.args.output_dir, self.args.run_name)
-    logger.info("Final Test Loss: {:.4f} Final Test Accuracy: {:.4f}".format(test_loss,
-                                                                             test_acc))
+      save_model(self.model, self.optimizer, self.args.output_dir,
+                 self.args.run_name)
+    logger.info("Final Test Loss: {:.4f} Final Test Accuracy: {:.4f}".format(
+        test_loss, test_acc))
     logger.info("Best test accuracy {:.4f}".format(self.best_acc))
 
     return self.model
