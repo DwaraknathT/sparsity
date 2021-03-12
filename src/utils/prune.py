@@ -173,9 +173,10 @@ class Pruner:
     return model
 
   def step(self, model, step):
-    if self.args.ramping:
-      model = self.ramping_prune(model, step)
-    else:
-      model = self.single_shot_prune(model, step)
+    if not self.args.snip:
+      if self.args.ramping:
+        model = self.ramping_prune(model, step)
+      else:
+        model = self.single_shot_prune(model, step)
 
     return model

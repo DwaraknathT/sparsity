@@ -1,40 +1,25 @@
 import copy
 
 import torch
-
+import numpy as np
+from src.utils.logger import get_logger
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
+import seaborn as sns
+import matplotlib.pylab as plt
 
-def snip(model, criterion, dataloader, args):
-  prune_model = copy.deepcopy(model).to(device)
-  for module in prune_model.modules():
-    if hasattr(module, 'mask'):
-      module.weight.requires_grad = False
-      module.mask.requires_grad = True
-    if isinstance(module, torch.nn.BatchNorm2d):
-      module.eval()
+logger = get_logger(__name__)
 
-  for i, (data, labels) in enumerate(dataloader):
-    if i == args.snip_batch:
-      break
-    data, labels = data.to(device), labels.to(device)
-    out = prune_model(data)
-    loss = criterion(out, labels)
-    prune_model.zero_grad()
-    loss.backward()
 
-  grads_abs = []
-  unit_grad_norm = []
-  reformed_shapes = []
-  for layer in prune_model.modules():
-    if hasattr(layer, 'mask'):
-      grad = torch.abs(layer.mask.grad)
-      grads_abs.append(grad)
-      reshaped_grad = grad.view(grad.shape[0], -1).transpose(0, 1)
-      unit_norm = torch.norm(reshaped_grad, dim=0)
-      unit_grad_norm.append(unit_norm)
-      reformed_shapes.append(reshaped_grad.shape)
+def heatmap2d(arr, name):
+  plt.imshow(arr, cmap='viridis')
+  plt.colorbar()
+  plt.savefig(name)
+  plt.cla()
+  plt.clf()
 
+
+def get_masks(grads_abs, unit_grad_norm, reformed_shapes, args):
   # Gather all scores in a single vector and normalise
   if args.prune_type == 'unit':
     all_scores = torch.cat(unit_grad_norm)
@@ -44,8 +29,8 @@ def snip(model, criterion, dataloader, args):
     sorted_norms = torch.sort(all_scores)
     acceptable_score = (sorted_norms[0])[idx]
     num_params_to_keep = int(len(all_scores) * (1. - args.final_sparsity))
-    print('Total units in the net {}'.format(len(all_scores)))
-    print('Units retained after pruning {}'.format(num_params_to_keep))
+    logger.info('Total units in the net {}'.format(len(all_scores)))
+    logger.info('Units retained after pruning {}'.format(num_params_to_keep))
     masks = []
     for g, reformed_shape, grad in zip(unit_grad_norm, reformed_shapes,
                                        grads_abs):
@@ -64,11 +49,98 @@ def snip(model, criterion, dataloader, args):
     num_params_to_keep = int(len(all_scores) * (1. - args.final_sparsity))
     threshold, _ = torch.topk(all_scores, num_params_to_keep, sorted=True)
     acceptable_score = threshold[-1]
-    print('Total units in the net {}'.format(len(all_scores)))
-    print('Units retained after pruning {}'.format(num_params_to_keep))
+    logger.info('Total units in the net {}'.format(len(all_scores)))
+    logger.info('Units retained after pruning {}'.format(num_params_to_keep))
     masks = []
     for g in grads_abs:
       masks.append(((g / norm_factor) >= acceptable_score).float())
+
+  return masks
+
+
+def snip(model, criterion, dataloader, args):
+  prune_model = copy.deepcopy(model).to(device)
+  masks = []
+  addition_masks = []
+  for module in prune_model.modules():
+    if hasattr(module, 'mask'):
+      module.weight.requires_grad = False
+      module.mask.requires_grad = True
+      masks.append(torch.zeros_like(module.mask.data))
+      addition_masks.append(torch.zeros_like(module.mask.data))
+    if isinstance(module, torch.nn.BatchNorm2d):
+      module.eval()
+
+  if args.union_mask:
+    for i, (data, labels) in enumerate(dataloader):
+      if i > 50:
+        break
+      data, labels = data.to(device), labels.to(device)
+      out = prune_model(data)
+      loss = criterion(out, labels)
+      prune_model.zero_grad()
+      loss.backward()
+
+      grads_abs = []
+      unit_grad_norm = []
+      reformed_shapes = []
+      for layer in prune_model.modules():
+        if hasattr(layer, 'mask'):
+          grad = torch.abs(layer.mask.grad)
+          grads_abs.append(grad)
+          reshaped_grad = grad.view(grad.shape[0], -1).transpose(0, 1)
+          unit_norm = torch.norm(reshaped_grad, dim=0)
+          unit_grad_norm.append(unit_norm)
+          reformed_shapes.append(reshaped_grad.shape)
+
+          # Reset the params
+          layer.reset_parameters()
+
+      point_masks = get_masks(grads_abs, unit_grad_norm, reformed_shapes, args)
+
+      mask_sparsities = []
+      union_mask_sparsities = []
+      for i, point_mask in enumerate(point_masks):
+        masks[i] = 1. - ((1. - masks[i]) * (1. - point_mask))
+        addition_masks[i] = masks[i] + point_mask
+        mask_sparsities.append(
+            round(
+                1. - np.sum(point_mask.cpu().numpy()) /
+                point_mask.cpu().numpy().size, 2))
+        union_mask_sparsities.append((round(
+            1. - np.sum(masks[i].cpu().numpy()) / masks[i].cpu().numpy().size,
+            2)))
+
+    #   logger.info('Mask sparsity {} '.format(mask_sparsities))
+    #   logger.info('Union mask sparsity {}'.format(union_mask_sparsities))
+
+    # for i, mask in enumerate(addition_masks):
+    #   mask = mask.reshape(mask.shape[0], -1)
+    #   heatmap2d(mask.cpu().numpy(), 'layer_{}.png'.format(i))
+
+  else:
+    for i, (data, labels) in enumerate(dataloader):
+      if i == args.snip_batch:
+        break
+      data, labels = data.to(device), labels.to(device)
+      out = prune_model(data)
+      loss = criterion(out, labels)
+      prune_model.zero_grad()
+      loss.backward()
+
+    grads_abs = []
+    unit_grad_norm = []
+    reformed_shapes = []
+    for layer in prune_model.modules():
+      if hasattr(layer, 'mask'):
+        grad = torch.abs(layer.mask.grad)
+        grads_abs.append(grad)
+        reshaped_grad = grad.view(grad.shape[0], -1).transpose(0, 1)
+        unit_norm = torch.norm(reshaped_grad, dim=0)
+        unit_grad_norm.append(unit_norm)
+        reformed_shapes.append(reshaped_grad.shape)
+
+    masks = get_masks(grads_abs, unit_grad_norm, reformed_shapes, args)
 
   del prune_model
   count = 0

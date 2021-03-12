@@ -8,6 +8,7 @@ from src.utils.logger import get_logger
 from src.utils.prune import Pruner
 from src.utils.utils import get_lr, LrScheduler, save_model, load_model
 from src.utils.utils import get_model, mask_check, mask_sparsity
+from src.utils.snip import snip
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 logger = get_logger(__name__)
@@ -56,14 +57,16 @@ class SparseTrainer:
 
   # Training
   def train(self, trainloader, testloader):
-    # Fill up the steps
-    # Get model, optimizer, criterion, lr_scheduler
+    # Prune the model if snip
+    if self.args.snip:
+      self.model = snip(self.model, self.criterion, trainloader, self.args)
+      self.args.end_step = 0
+
     self.model.train()
     if self.args.steps is None:
       self.args.steps = self.args.epochs * len(trainloader)
     pruner = Pruner(self.args, self.model)
     scheduler = LrScheduler(self.args, self.optimizer)
-    self.end_step = int(self.args.end_step * self.args.steps)
 
     logger.info('Mask check before training')
     mask_check(self.model)

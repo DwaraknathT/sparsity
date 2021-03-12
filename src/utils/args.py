@@ -83,6 +83,14 @@ parser.add_argument('--ramping',
                     type=bool,
                     default=False,
                     help='Use ramping sparsity')
+parser.add_argument('--snip',
+                    type=bool,
+                    default=False,
+                    help='Use ramping sparsity')
+parser.add_argument('--snip_batch',
+                    type=int,
+                    default=1,
+                    help='No of batches for snip')
 parser.add_argument('--carry_mask',
                     type=bool,
                     default=False,
