@@ -94,7 +94,7 @@ class Pruner:
         mask_sparsity = round(
             1. - np.sum(module.mask.detach().cpu().numpy()) /
             module.mask.detach().cpu().numpy().size, 2)
-        if mask_sparsity <= self.args.final_sparsity and mask_sparsity <= prune_compute:
+        if mask_sparsity <= self.args.final_sparsity:
           if self.args.carry_mask:
             module_mask = prune(module.weight * module.mask, prune_compute,
                                 self.args.prune_type)
