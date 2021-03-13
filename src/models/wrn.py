@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 
-from models.layers import MaskedConv
+from src.models.layers import MaskedConv
 from src.models.registry import register
 
 
