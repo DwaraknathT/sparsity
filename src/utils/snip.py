@@ -19,7 +19,7 @@ def heatmap2d(arr, name):
   plt.clf()
 
 
-def get_masks(grads_abs, unit_grad_norm, reformed_shapes, args):
+def get_global_masks(grads_abs, unit_grad_norm, reformed_shapes, args):
   # Gather all scores in a single vector and normalise
   if args.prune_type == 'unit':
     all_scores = torch.cat(unit_grad_norm)
@@ -29,8 +29,6 @@ def get_masks(grads_abs, unit_grad_norm, reformed_shapes, args):
     sorted_norms = torch.sort(all_scores)
     acceptable_score = (sorted_norms[0])[idx]
     num_params_to_keep = int(len(all_scores) * (1. - args.final_sparsity))
-    logger.info('Total units in the net {}'.format(len(all_scores)))
-    logger.info('Units retained after pruning {}'.format(num_params_to_keep))
     masks = []
     for g, reformed_shape, grad in zip(unit_grad_norm, reformed_shapes,
                                        grads_abs):
@@ -49,13 +47,11 @@ def get_masks(grads_abs, unit_grad_norm, reformed_shapes, args):
     num_params_to_keep = int(len(all_scores) * (1. - args.final_sparsity))
     threshold, _ = torch.topk(all_scores, num_params_to_keep, sorted=True)
     acceptable_score = threshold[-1]
-    logger.info('Total units in the net {}'.format(len(all_scores)))
-    logger.info('Units retained after pruning {}'.format(num_params_to_keep))
     masks = []
     for g in grads_abs:
       masks.append(((g / norm_factor) >= acceptable_score).float())
 
-  return masks
+  return masks, len(all_scores), num_params_to_keep
 
 
 def snip(model, criterion, dataloader, args):
@@ -73,8 +69,6 @@ def snip(model, criterion, dataloader, args):
 
   if args.union_mask:
     for i, (data, labels) in enumerate(dataloader):
-      if i > 50:
-        break
       data, labels = data.to(device), labels.to(device)
       out = prune_model(data)
       loss = criterion(out, labels)
@@ -96,13 +90,14 @@ def snip(model, criterion, dataloader, args):
           # Reset the params
           layer.reset_parameters()
 
-      point_masks = get_masks(grads_abs, unit_grad_norm, reformed_shapes, args)
+      point_masks, all_params, num_params_to_keep = get_global_masks(
+          grads_abs, unit_grad_norm, reformed_shapes, args)
 
       mask_sparsities = []
       union_mask_sparsities = []
       for i, point_mask in enumerate(point_masks):
         masks[i] = 1. - ((1. - masks[i]) * (1. - point_mask))
-        addition_masks[i] = masks[i] + point_mask
+        addition_masks[i] = addition_masks[i] + point_mask
         mask_sparsities.append(
             round(
                 1. - np.sum(point_mask.cpu().numpy()) /
@@ -113,10 +108,6 @@ def snip(model, criterion, dataloader, args):
 
     #   logger.info('Mask sparsity {} '.format(mask_sparsities))
     #   logger.info('Union mask sparsity {}'.format(union_mask_sparsities))
-
-    # for i, mask in enumerate(addition_masks):
-    #   mask = mask.reshape(mask.shape[0], -1)
-    #   heatmap2d(mask.cpu().numpy(), 'layer_{}.png'.format(i))
 
   else:
     for i, (data, labels) in enumerate(dataloader):
@@ -140,7 +131,11 @@ def snip(model, criterion, dataloader, args):
         unit_grad_norm.append(unit_norm)
         reformed_shapes.append(reshaped_grad.shape)
 
-    masks = get_masks(grads_abs, unit_grad_norm, reformed_shapes, args)
+    masks, all_params, num_params_to_keep = get_global_masks(
+        grads_abs, unit_grad_norm, reformed_shapes, args)
+
+  logger.info('Total units in the net {}'.format(all_params))
+  logger.info('Units retained after pruning {}'.format(num_params_to_keep))
 
   del prune_model
   count = 0
