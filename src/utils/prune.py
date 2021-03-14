@@ -170,7 +170,7 @@ class Pruner:
               module.mask.detach().cpu().numpy().size, 2)
           sparsities.append(mask_sparsity)
           count += 1
-      self.args.initial_sparsity = min(sparsities)
+      self.args.initial_sparsity = max(sparsities)
       logger.info('Initial sparsity updated to {}'.format(
           self.args.initial_sparsity))
       logger.info('Setting carry mask to true')
