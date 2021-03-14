@@ -54,6 +54,41 @@ def get_global_masks(grads_abs, unit_grad_norm, reformed_shapes, args):
   return masks, len(all_scores), num_params_to_keep
 
 
+def batch_snip(data,
+               labels,
+               model,
+               criterion,
+               args,
+               masks=None,
+               enforce_mask=False):
+  data, labels = data.to(device), labels.to(device)
+  out = model(data)
+  loss = criterion(out, labels)
+  model.zero_grad()
+  loss.backward()
+
+  grads_abs = []
+  unit_grad_norm = []
+  reformed_shapes = []
+  count = 0
+  for layer in model.modules():
+    if hasattr(layer, 'mask'):
+      grad = torch.abs(layer.mask.grad)
+      if enforce_mask:
+        grad *= masks[count]
+        count += 1
+      grads_abs.append(grad)
+      reshaped_grad = grad.view(grad.shape[0], -1).transpose(0, 1)
+      unit_norm = torch.norm(reshaped_grad, dim=0)
+      unit_grad_norm.append(unit_norm)
+      reformed_shapes.append(reshaped_grad.shape)
+
+      # Reset the params
+      layer.reset_parameters()
+
+  return grads_abs, reformed_shapes, unit_grad_norm
+
+
 def snip(model, criterion, dataloader, args):
   prune_model = copy.deepcopy(model).to(device)
   masks = []
@@ -68,28 +103,11 @@ def snip(model, criterion, dataloader, args):
       module.eval()
 
   if args.union_mask:
+    mask_sparsities = []
+    union_mask_sparsities = []
     for i, (data, labels) in enumerate(dataloader):
-      data, labels = data.to(device), labels.to(device)
-      out = prune_model(data)
-      loss = criterion(out, labels)
-      prune_model.zero_grad()
-      loss.backward()
-
-      grads_abs = []
-      unit_grad_norm = []
-      reformed_shapes = []
-      for layer in prune_model.modules():
-        if hasattr(layer, 'mask'):
-          grad = torch.abs(layer.mask.grad)
-          grads_abs.append(grad)
-          reshaped_grad = grad.view(grad.shape[0], -1).transpose(0, 1)
-          unit_norm = torch.norm(reshaped_grad, dim=0)
-          unit_grad_norm.append(unit_norm)
-          reformed_shapes.append(reshaped_grad.shape)
-
-          # Reset the params
-          layer.reset_parameters()
-
+      grads_abs, reformed_shapes, unit_grad_norm = batch_snip(
+          data, labels, prune_model, criterion, args, False)
       point_masks, all_params, num_params_to_keep = get_global_masks(
           grads_abs, unit_grad_norm, reformed_shapes, args)
 
@@ -105,31 +123,29 @@ def snip(model, criterion, dataloader, args):
         union_mask_sparsities.append((round(
             1. - np.sum(masks[i].cpu().numpy()) / masks[i].cpu().numpy().size,
             2)))
+        nmax = addition_masks[i].max()
+        nmin = addition_masks[i].min()
 
-    #   logger.info('Mask sparsity {} '.format(mask_sparsities))
-    #   logger.info('Union mask sparsity {}'.format(union_mask_sparsities))
+    logger.info('Mask sparsity {} '.format(mask_sparsities))
+    logger.info('Union mask sparsity {}'.format(union_mask_sparsities))
+    logger.info('Max {} Min {}'.format(nmax, nmin))
+
+    #normalize the addition masks
+    addition_masks = [x / nmax for x in addition_masks]
+    for i, (data, labels) in enumerate(dataloader):
+      if i == args.snip_batch:
+        break
+      grads_abs, reformed_shapes, unit_grad_norm = batch_snip(
+          data, labels, prune_model, criterion, args, addition_masks, True)
+    masks, all_params, num_params_to_keep = get_global_masks(
+        grads_abs, unit_grad_norm, reformed_shapes, args)
 
   else:
     for i, (data, labels) in enumerate(dataloader):
       if i == args.snip_batch:
         break
-      data, labels = data.to(device), labels.to(device)
-      out = prune_model(data)
-      loss = criterion(out, labels)
-      prune_model.zero_grad()
-      loss.backward()
-
-    grads_abs = []
-    unit_grad_norm = []
-    reformed_shapes = []
-    for layer in prune_model.modules():
-      if hasattr(layer, 'mask'):
-        grad = torch.abs(layer.mask.grad)
-        grads_abs.append(grad)
-        reshaped_grad = grad.view(grad.shape[0], -1).transpose(0, 1)
-        unit_norm = torch.norm(reshaped_grad, dim=0)
-        unit_grad_norm.append(unit_norm)
-        reformed_shapes.append(reshaped_grad.shape)
+      grads_abs, reformed_shapes, unit_grad_norm = batch_snip(
+          data, labels, prune_model, criterion, args, masks, True)
 
     masks, all_params, num_params_to_keep = get_global_masks(
         grads_abs, unit_grad_norm, reformed_shapes, args)

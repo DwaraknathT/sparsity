@@ -71,16 +71,48 @@ class Pruner:
     return prune_compute
 
   def global_prune(self, model, prune_compute):
-    weights = []
-    for layer in model.modules():
-      if hasattr(layer, 'mask'):
-        weights.append(layer.weight)
-    scores = torch.cat([torch.flatten(w) for w in weights])
-    idx = int(prune_compute * scores.shape[0])
-    norm = torch.abs(scores)
-    threshold = (torch.sort(norm, dim=0)[0])[idx]
-    # threshold = values[-1]
-    masks = [(torch.abs(w) > threshold).float() for w in weights]
+    if self.args.prune_type == 'weight':
+      weights = []
+      for layer in model.modules():
+        if hasattr(layer, 'mask'):
+          weights.append(layer.weight)
+      scores = torch.cat([torch.flatten(w) for w in weights])
+      idx = int(prune_compute * scores.shape[0])
+      norm = torch.abs(scores)
+      threshold = (torch.sort(norm, dim=0)[0])[idx]
+      # threshold = values[-1]
+      masks = [(torch.abs(w) > threshold).float() for w in weights]
+    elif self.args.prune_type == 'unit':
+      weights = []
+      unit_weight_norm = []
+      reformed_shapes = []
+      for layer in model.modules():
+        if hasattr(layer, 'mask'):
+          weight = torch.abs(layer.weight.data)
+          weights.append(weight)
+          reshaped_weight = weight.view(weight.shape[0], -1).transpose(0, 1)
+          unit_norm = torch.norm(reshaped_weight, dim=0)
+          unit_weight_norm.append(unit_norm)
+          reformed_shapes.append(reshaped_weight.shape)
+
+      all_scores = torch.cat(unit_weight_norm)
+      #norm_factor = torch.sum(all_scores)
+      #all_scores.div_(norm_factor)
+      idx = int(self.args.final_sparsity * int(all_scores.shape[0]))
+      sorted_norms = torch.sort(all_scores)
+      acceptable_score = (sorted_norms[0])[idx]
+      masks = []
+      for g, reformed_shape, grad in zip(unit_weight_norm, reformed_shapes,
+                                         weights):
+        w_shape = list(grad.size())
+        w = grad.view(w_shape[0], -1).transpose(0, 1)
+        norm = torch.norm(w, dim=0)
+        #norm.div_(norm_factor)
+        mask = (norm < acceptable_score)[None, :]
+        mask = mask.repeat(w.shape[0], 1).to(device)
+        mask = (1. - mask.float()).transpose(0, 1).view(w_shape)
+        masks.append(mask)
+
     count = 0
     for layer in model.modules():
       if hasattr(layer, 'mask'):
