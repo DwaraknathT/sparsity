@@ -63,14 +63,15 @@ class LrScheduler:
           step_size_down=args.down_step)
 
   def linear_schedule(self, step):
-    t = (step) / (self.steps)
-    if t <= 0.5:
-      factor = 1.0
-    elif t <= 0.9:
-      factor = 1.0 - (1.0 - 0.01) * (t - 0.5) / 0.4
-    else:
-      factor = 0.01
-    return self.init_lr * factor
+    optim_factor = 0
+    if (step > (160 * self.agrs.steps_per_epoch)):
+      optim_factor = 3
+    elif (step > (120 * self.args.steps_per_epoch)):
+      optim_factor = 2
+    elif (step > (60 * self.args.steps_per_epoch)):
+      optim_factor = 1
+
+    return self.args.lr * math.pow(0.2, optim_factor)
 
   def step(self, optimizer, step):
     if self.args.lr_schedule == 'linear':

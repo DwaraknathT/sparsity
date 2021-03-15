@@ -60,6 +60,7 @@ class DenseTrainer:
     self.model.train()
     if self.args.steps is None:
       self.args.steps = self.args.epochs * len(trainloader)
+    self.args.steps_per_epoch = len(trainloader)
 
     logger.info('Mask check before training')
     mask_check(self.model)

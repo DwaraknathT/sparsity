@@ -64,6 +64,10 @@ parser.add_argument('--milestones',
 parser.add_argument('--epochs', default=200, type=int, help='No of epochs')
 parser.add_argument('--clip', default=1, type=int, help='Gradient clipping')
 parser.add_argument('--steps', default=None, type=int, help='No of steps')
+parser.add_argument('--steps_per_epoch',
+                    default=500,
+                    type=int,
+                    help='No of steps')
 parser.add_argument('--eval_step',
                     default=1000,
                     type=int,

@@ -65,6 +65,7 @@ class SparseTrainer:
     self.model.train()
     if self.args.steps is None:
       self.args.steps = self.args.epochs * len(trainloader)
+    self.args.steps_per_epoch = len(trainloader)
     pruner = Pruner(self.args, self.model)
     scheduler = LrScheduler(self.args, self.optimizer)
 
