@@ -65,7 +65,7 @@ class LrScheduler:
 
   def linear_schedule(self, step):
     optim_factor = 0
-    if (step > (160 * self.agrs.steps_per_epoch)):
+    if (step > (160 * self.args.steps_per_epoch)):
       optim_factor = 3
     elif (step > (120 * self.args.steps_per_epoch)):
       optim_factor = 2
