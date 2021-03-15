@@ -41,7 +41,7 @@ parser.add_argument('--num_classes',
 parser.add_argument('--optim', default='sgd', type=str, help='Optimizer to use')
 parser.add_argument('--lr', default=0.1, type=float, help='Initial LR')
 parser.add_argument('--lr_schedule',
-                    default='linear',
+                    default='swa',
                     type=str,
                     help='LR scheduler')
 parser.add_argument('--lr_cycle',

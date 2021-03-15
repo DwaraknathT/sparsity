@@ -74,9 +74,22 @@ class LrScheduler:
 
     return self.args.lr * math.pow(0.2, optim_factor)
 
+  def swa_schedule(self, step):
+    t = (step) / (self.steps)
+    if t <= 0.5:
+      factor = 1.0
+    elif t <= 0.9:
+      factor = 1.0 - (1.0 - 0.01) * (t - 0.5) / 0.4
+    else:
+      factor = 0.01
+    return self.init_lr * factor
+
   def step(self, optimizer, step):
     if self.args.lr_schedule == 'linear':
       lr = self.linear_schedule(step)
+      set_lr(optimizer, lr)
+    elif self.args.lr_schedule == 'swa':
+      lr = self.swa_schedule(step)
       set_lr(optimizer, lr)
     elif self.args.lr_schedule == 'cyclic':
       self.cyclic_lr.step()
