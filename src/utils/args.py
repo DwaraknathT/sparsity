@@ -32,7 +32,7 @@ parser.add_argument("--clip", default=1, type=int, help="Gradient clipping")
 parser.add_argument("--steps", default=None, type=int, help="No of steps")
 parser.add_argument("--steps_per_epoch", default=500, type=int, help="No of steps")
 parser.add_argument("--eval_step", default=1000, type=int, help="Eval every this steps")
-parser.add_argument("--batch_size", default=100, type=int, help="Batch size")
+parser.add_argument("--batch_size", default=128, type=int, help="Batch size")
 parser.add_argument(
     "--output_dir",
     type=str,
@@ -45,6 +45,12 @@ parser.add_argument(
 # sparsity params
 parser.add_argument("--ramping", type=bool, default=False, help="Use ramping sparsity")
 parser.add_argument("--snip", type=bool, default=False, help="Use ramping sparsity")
+parser.add_argument(
+    "--compute_aware",
+    type=bool,
+    default=False,
+    help="Use compute aware snip condition",
+)
 parser.add_argument("--snip_batch", type=int, default=1, help="No of batches for snip")
 parser.add_argument(
     "--carry_mask", type=bool, default=False, help="Carry mask in ramping pruning"
