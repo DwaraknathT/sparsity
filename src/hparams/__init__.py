@@ -1,4 +1,4 @@
-__all__ = ['resnet', 'vgg']
+__all__ = ["resnet", "vgg"]
 
 from .resnet import *
 from .vgg import *

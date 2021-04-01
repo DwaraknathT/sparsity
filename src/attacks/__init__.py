@@ -1,6 +1,6 @@
-__all__ = ['hparams']
+__all__ = ["hparams"]
 
-from .hparams import *
 from .base import *
 from .fgsm import *
+from .hparams import *
 from .pgd import *

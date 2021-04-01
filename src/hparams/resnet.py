@@ -1,12 +1,13 @@
 from src.hparams.base import Dense, Sparse
+
 from .registry import register
 
 
 @register
 def resnet32_dense():
-  hps = Dense()
-  hps.model = 'resnet32'
-  return hps
+    hps = Dense()
+    hps.model = "resnet32"
+    return hps
 
 
 # =======================================
@@ -23,45 +24,46 @@ def resnet32_dense():
 # carry mask, no carry mask - cm, ncm
 # ========================================
 
+
 @register
 def weight_linear_90_0_03_100_local_ncm_step():
-  hps = Sparse()
-  hps.model = 'resnet32'
-  hps.final_sparsity = 0.9
-  hps.end_step = 0.3
-  hps.name = 'weight_linear_90_0_03_100_local_ncm_step'
+    hps = Sparse()
+    hps.model = "resnet32"
+    hps.final_sparsity = 0.9
+    hps.end_step = 0.3
+    hps.name = "weight_linear_90_0_03_100_local_ncm_step"
 
-  return hps
+    return hps
 
 
 @register
 def weight_linear_90_0_03_100_local_cm_step():
-  hps = Sparse()
-  hps.model = 'resnet32'
-  hps.final_sparsity = 0.9
-  hps.end_step = 0.3
-  hps.carry_mask = True
-  hps.name = 'weight_linear_90_0_03_100_local_cm_step'
+    hps = Sparse()
+    hps.model = "resnet32"
+    hps.final_sparsity = 0.9
+    hps.end_step = 0.3
+    hps.carry_mask = True
+    hps.name = "weight_linear_90_0_03_100_local_cm_step"
 
-  return hps
+    return hps
 
 
 @register
 def weight_linear_90_0_05_100_local_ncm_step():
-  hps = Sparse()
-  hps.model = 'resnet32'
-  hps.final_sparsity = 0.9
-  hps.name = 'weight_linear_90_0_05_100_local_ncm_step'
+    hps = Sparse()
+    hps.model = "resnet32"
+    hps.final_sparsity = 0.9
+    hps.name = "weight_linear_90_0_05_100_local_ncm_step"
 
-  return hps
+    return hps
 
 
 @register
 def weight_linear_90_0_05_100_local_cm_step():
-  hps = Sparse()
-  hps.model = 'resnet32'
-  hps.final_sparsity = 0.9
-  hps.carry_mask = True
-  hps.name = 'weight_linear_90_0_05_100_local_cm_step'
+    hps = Sparse()
+    hps.model = "resnet32"
+    hps.final_sparsity = 0.9
+    hps.carry_mask = True
+    hps.name = "weight_linear_90_0_05_100_local_cm_step"
 
-  return hps
+    return hps
