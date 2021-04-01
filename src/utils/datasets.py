@@ -130,4 +130,7 @@ def get_data(args):
         testloader = dataloaders["test"]
         args.num_classes = 200
 
+    args.steps = args.epochs * len(trainloader)
+    args.steps_per_epoch = len(trainloader)
+
     return trainloader, testloader

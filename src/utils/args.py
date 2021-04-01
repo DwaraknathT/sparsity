@@ -15,7 +15,7 @@ parser.add_argument("--resume", default=False, type=bool, help="Resume training"
 parser.add_argument("--dataset", default="cifar10", type=str, help="Dataset to use")
 parser.add_argument("--num_classes", default=10, type=int, help="Number of classes")
 parser.add_argument("--optim", default="sgd", type=str, help="Optimizer to use")
-parser.add_argument("--lr", default=0.1, type=float, help="Initial LR")
+parser.add_argument("--lr", default=0.05, type=float, help="Initial LR")
 parser.add_argument("--lr_schedule", default="swa", type=str, help="LR scheduler")
 parser.add_argument("--lr_cycle", default="full", type=str, help="Full or half cycle")
 parser.add_argument("--up_step", default=5000, type=int, help="Cyclic lr step size")
