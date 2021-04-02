@@ -102,7 +102,6 @@ parser.add_argument("--embs_share_weight", action="store_true")
 parser.add_argument("--proj_share_weight", action="store_true")
 parser.add_argument("--scale_emb_or_prj", type=str, default="prj")
 
-parser.add_argument("--output_dir", type=str, default=None)
 parser.add_argument("--use_tb", action="store_true")
 parser.add_argument("--save_mode", type=str, choices=["all", "best"], default="best")
 parser.add_argument("--label_smoothing", action="store_true")

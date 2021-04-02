@@ -18,11 +18,10 @@ from torchtext.datasets import TranslationDataset
 from tqdm import tqdm
 
 import src.models.transformers.Constants as Constants
-from src.models.transformers.optim import Scheduledoptim
-from src.models.transformers.slice_transformer import Slice_Transformer
+from src.models.transformers.Optim import ScheduledOptim
 from src.models.transformers.transformer import Transformer
 from src.trainers.registry import register
-from src.utils.transformer_utils.args import get_args
+from src.utils.args import get_args
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 

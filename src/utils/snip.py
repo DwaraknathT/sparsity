@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from src.models.layers import MaskedConv, MaskedDense
+from src.layers.masked_layers import MaskedConv, MaskedDense
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -139,7 +139,7 @@ def snip(model, criterion, dataloader, args):
         # reduced_array = np.take(mask_array, indices, axis=0)
         # print(reduced_array.shape)
         # print("--------")
-        if hasattr(layer, "mask"):
+        if isinstance(layer, MaskedConv) or isinstance(layer, MaskedDense):
             layer.reset_parameters()
             layer.mask.data = masks[count]
             count += 1
