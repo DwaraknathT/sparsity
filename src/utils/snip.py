@@ -1,4 +1,5 @@
 import copy
+import numpy as np
 
 import torch
 import torch.nn as nn
@@ -129,6 +130,14 @@ def snip(model, criterion, dataloader, args):
     del prune_model
     count = 0
     for layer in model.modules():
+        # print(masks[count].shape)
+        # mask_array = masks[count].cpu().numpy()
+        # w = masks[count].view(masks[count].shape[0], -1).transpose(0, 1)
+        # w = torch.norm(w, dim=0)
+        # indices = torch.nonzero(w, as_tuple=True)[0].cpu().numpy()
+        # reduced_array = np.take(mask_array, indices, axis=0)
+        # print(reduced_array.shape)
+        # print("--------")
         if hasattr(layer, "mask"):
             layer.reset_parameters()
             layer.mask.data = masks[count]
