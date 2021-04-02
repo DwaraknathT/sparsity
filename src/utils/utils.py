@@ -146,9 +146,9 @@ def mask_check(net):
                 zeros_and_ones = True
             else:
                 mixed_mask = True
-    if all_ones:
+    if all_ones and not zeros_and_ones:
         logger.warning("Mask is all 1s")
-    elif zeros_and_ones:
+    if zeros_and_ones:
         logger.info("Mask is 0s and 1s")
     elif mixed_mask:
         logger.warning("Mask is not binary")
