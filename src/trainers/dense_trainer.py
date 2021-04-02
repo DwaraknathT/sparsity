@@ -1,4 +1,5 @@
 import time
+
 import torch
 
 from src.attacks.hparams.registry import get_attack_params
@@ -6,15 +7,8 @@ from src.attacks.registry import get_attack
 from src.attacks.test_attack import Test_Attack
 from src.models.registry import register
 from src.utils.logger import get_logger
-from src.utils.utils import (
-    LrScheduler,
-    get_lr,
-    get_model,
-    load_model,
-    mask_check,
-    save_model,
-    mask_sparsity,
-)
+from src.utils.utils import (LrScheduler, get_lr, get_model, load_model,
+                             mask_check, mask_sparsity, save_model)
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 logger = get_logger(__name__)

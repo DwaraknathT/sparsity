@@ -1,11 +1,12 @@
 import numpy as np
 import torch
 
-from src.trainers.dense_trainer import DenseTrainer
-from src.trainers.sparse_trainer import SparseTrainer
 from src.utils.args import get_args
 from src.utils.datasets import get_data
 from src.utils.logger import get_logger
+from src.trainers.dense_trainer import DenseTrainer
+from src.trainers.sparse_trainer import SparseTrainer
+from src.trainers.transformer_trainer import TransformerTrainer
 
 # Get parameters and setup directories, loggers
 args = get_args()
@@ -24,16 +25,21 @@ trainers = {"dense": DenseTrainer, "sparse": SparseTrainer}
 
 
 def main():
-    trainloader, testloader = get_data(args)
-    # get trainer
-    trainer = trainers[args.model_type](args)
-    if args.mode == "train":
-        logger.info("Starting training")
-        model = trainer.train(trainloader, testloader)
-    elif args.mode == "eval":
-        logger.info("Starting evaluation")
-        loss, acc = trainer.test(testloader)
-        logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(loss, acc))
+    if args.model == "Transformer":
+        trainer = TransformerTrainer(args)
+        if args.mode == "train":
+            trainer.train()
+    else:
+        trainloader, testloader = get_data(args)
+        # get trainer
+        trainer = trainers[args.model_type](args)
+        if args.mode == "train":
+            logger.info("Starting training")
+            model = trainer.train(trainloader, testloader)
+        elif args.mode == "eval":
+            logger.info("Starting evaluation")
+            loss, acc = trainer.test(testloader)
+            logger.info("Test Loss: {:.4f} Test Accuracy: {:.4f}".format(loss, acc))
 
 
 if __name__ == "__main__":

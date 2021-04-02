@@ -88,6 +88,25 @@ parser.add_argument(
     "--attack", default="fgsm", type=str, help="Adversarial attack to use"
 )
 
+# Transformer arguments
+parser.add_argument("--d_model", type=int, default=512)
+parser.add_argument("--d_inner_hid", type=int, default=2048)
+parser.add_argument("--d_k", type=int, default=512)
+parser.add_argument("--d_v", type=int, default=512)
+
+parser.add_argument("--n_head", type=int, default=8)
+parser.add_argument("--n_layers", type=int, default=6)
+parser.add_argument("--n_warmup_steps", type=int, default=4000)
+parser.add_argument("--lr_mul", type=float, default=1.0)
+parser.add_argument("--embs_share_weight", action="store_true")
+parser.add_argument("--proj_share_weight", action="store_true")
+parser.add_argument("--scale_emb_or_prj", type=str, default="prj")
+
+parser.add_argument("--output_dir", type=str, default=None)
+parser.add_argument("--use_tb", action="store_true")
+parser.add_argument("--save_mode", type=str, choices=["all", "best"], default="best")
+parser.add_argument("--label_smoothing", action="store_true")
+
 
 def get_args():
     args = parser.parse_args()
