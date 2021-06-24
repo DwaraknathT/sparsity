@@ -5,7 +5,7 @@ import math
 
 import torch.nn as nn
 
-from src.models.layers import MaskedConv, MaskedDense
+from src.layers.masked_layers import MaskedConv, MaskedDense
 from src.models.registry import register
 
 __all__ = [

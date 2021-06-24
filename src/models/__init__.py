@@ -1,5 +1,4 @@
-__all__ = ["resnet", "vgg", "wrn"]
+__all__ = ["transformers", "vision"]
 
-from .resnet import *
-from .vgg import *
-from .wrn import *
+from .transformers import *
+from .vision import *

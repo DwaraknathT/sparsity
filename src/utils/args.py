@@ -15,7 +15,7 @@ parser.add_argument("--resume", default=False, type=bool, help="Resume training"
 parser.add_argument("--dataset", default="cifar10", type=str, help="Dataset to use")
 parser.add_argument("--num_classes", default=10, type=int, help="Number of classes")
 parser.add_argument("--optim", default="sgd", type=str, help="Optimizer to use")
-parser.add_argument("--lr", default=0.1, type=float, help="Initial LR")
+parser.add_argument("--lr", default=0.05, type=float, help="Initial LR")
 parser.add_argument("--lr_schedule", default="swa", type=str, help="LR scheduler")
 parser.add_argument("--lr_cycle", default="full", type=str, help="Full or half cycle")
 parser.add_argument("--up_step", default=5000, type=int, help="Cyclic lr step size")
@@ -32,7 +32,7 @@ parser.add_argument("--clip", default=1, type=int, help="Gradient clipping")
 parser.add_argument("--steps", default=None, type=int, help="No of steps")
 parser.add_argument("--steps_per_epoch", default=500, type=int, help="No of steps")
 parser.add_argument("--eval_step", default=1000, type=int, help="Eval every this steps")
-parser.add_argument("--batch_size", default=100, type=int, help="Batch size")
+parser.add_argument("--batch_size", default=128, type=int, help="Batch size")
 parser.add_argument(
     "--output_dir",
     type=str,
@@ -45,6 +45,12 @@ parser.add_argument(
 # sparsity params
 parser.add_argument("--ramping", type=bool, default=False, help="Use ramping sparsity")
 parser.add_argument("--snip", type=bool, default=False, help="Use ramping sparsity")
+parser.add_argument(
+    "--compute_aware",
+    type=bool,
+    default=False,
+    help="Use compute aware snip condition",
+)
 parser.add_argument("--snip_batch", type=int, default=1, help="No of batches for snip")
 parser.add_argument(
     "--carry_mask", type=bool, default=False, help="Carry mask in ramping pruning"
@@ -81,6 +87,24 @@ parser.add_argument(
 parser.add_argument(
     "--attack", default="fgsm", type=str, help="Adversarial attack to use"
 )
+
+# Transformer arguments
+parser.add_argument("--d_model", type=int, default=512)
+parser.add_argument("--d_inner_hid", type=int, default=2048)
+parser.add_argument("--d_k", type=int, default=512)
+parser.add_argument("--d_v", type=int, default=512)
+
+parser.add_argument("--n_head", type=int, default=8)
+parser.add_argument("--n_layers", type=int, default=6)
+parser.add_argument("--n_warmup_steps", type=int, default=4000)
+parser.add_argument("--lr_mul", type=float, default=1.0)
+parser.add_argument("--embs_share_weight", action="store_true")
+parser.add_argument("--proj_share_weight", action="store_true")
+parser.add_argument("--scale_emb_or_prj", type=str, default="prj")
+
+parser.add_argument("--use_tb", action="store_true")
+parser.add_argument("--save_mode", type=str, choices=["all", "best"], default="best")
+parser.add_argument("--label_smoothing", action="store_true")
 
 
 def get_args():

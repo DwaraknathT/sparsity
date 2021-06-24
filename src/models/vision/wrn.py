@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 
-from src.models.layers import MaskedConv
+from src.layers.masked_layers import MaskedConv
 from src.models.registry import register
 
 
@@ -36,7 +36,7 @@ class wide_basic(nn.Module):
         self.shortcut = nn.Sequential()
         if stride != 1 or in_planes != planes:
             self.shortcut = nn.Sequential(
-                MaskedConv(in_planes, planes, kernel_size=1, stride=stride, bias=False),
+                nn.Conv2d(in_planes, planes, kernel_size=1, stride=stride, bias=False),
             )
 
     def forward(self, x):

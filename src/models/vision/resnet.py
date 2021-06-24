@@ -31,7 +31,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 
-from src.models.layers import MaskedConv
+from src.layers.masked_layers import MaskedConv
 from src.models.registry import register
 
 __all__ = [
